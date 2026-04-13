@@ -981,9 +981,70 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
   .mm-grid { grid-template-columns: 1fr 1fr; }
   .tl-left-col { width: 72px; }
 }
+/* ─── LOGIN ─── */
+#login-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.login-box {
+  background: var(--page);
+  border-radius: 16px;
+  border: 1px solid var(--border2);
+  padding: 48px 40px;
+  width: 100%; max-width: 400px;
+  display: flex; flex-direction: column; gap: 24px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.12);
+  text-align: center;
+}
+.login-logo { font-size: 2.4rem; }
+.login-title { font-size: 1.3rem; font-weight: 800; letter-spacing: -.5px; color: var(--text); }
+.login-sub { font-size: .88rem; color: var(--muted); line-height: 1.5; }
+.login-input {
+  width: 100%; padding: 14px 16px;
+  border: 1.5px solid var(--border2); border-radius: 10px;
+  background: var(--bg); color: var(--text);
+  font-family: var(--mono); font-size: 1rem; font-weight: 700;
+  text-align: center; letter-spacing: .1em; text-transform: uppercase;
+  outline: none; box-sizing: border-box;
+  transition: border-color .15s;
+}
+.login-input:focus { border-color: var(--accent); }
+.login-input.error { border-color: #c0392b; animation: shake .3s; }
+@keyframes shake {
+  0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
+}
+.login-btn {
+  width: 100%; padding: 14px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 10px;
+  font-family: var(--sans); font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: opacity .15s;
+}
+.login-btn:hover { opacity: .88; }
+.login-error { font-size: .83rem; color: #c0392b; min-height: 18px; }
 </style>
 </head>
 <body>
+
+<!-- ════ LOGIN ════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">📄</div>
+    <div>
+      <div class="login-title">Apuntes IA</div>
+      <div class="login-sub" style="margin-top:8px">Introduce tu código de acceso personal</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input class="login-input" id="login-code" type="text" placeholder="XXXX-XX" maxlength="12"
+        oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')checkCode()">
+      <div class="login-error" id="login-error"></div>
+      <button class="login-btn" onclick="checkCode()">Entrar →</button>
+    </div>
+    <div style="font-size:.75rem;color:var(--muted)">¿No tienes código? Contacta con nosotros.</div>
+  </div>
+</div>
 
 <!-- ════ BIBLIOTECA ════ -->
 <div id="lib">
@@ -1387,9 +1448,57 @@ const I18N = {
 };
 
 // ── Clave API por defecto (opcional) ─────────────────────────
-// Si rellenas esta variable, los usuarios no verán el campo de API key.
-// Deja '' para que cada usuario ponga la suya.
 const DEFAULT_GROQ_KEY = ['gsk_nCsHVwCl','yrVQNOfnAiEV','WGdyb3FYmJ1q','Cg6KRvkjtZeI','huUsUPvA'].join('');
+
+// ── Sistema de acceso por código ─────────────────────────────
+// Códigos válidos almacenados como base64 para no mostrarlos en claro
+// Para añadir/quitar clientes: edita esta lista
+// Generar base64 de un código: btoa('CODIGO') en la consola del navegador
+const ACCESS_CODES = [
+  'QVBVTlRTLUEx',     // APUNTS-A1
+  'QVBVTlRTLUIy',     // APUNTS-B2
+  'QVBVTlRTLUMz',     // APUNTS-C3
+  'QVBVTlRTLUQ0',     // APUNTS-D4
+  'QVBVTlRTLUU1',     // APUNTS-E5
+  'QVBVTlRTLUY2',     // APUNTS-F6
+  'QVBVTlRTLUc3',     // APUNTS-G7
+  'QVBVTlRTLUg4',     // APUNTS-H8
+  'QVBVTlRTLUk5',     // APUNTS-I9
+  'QVBVTlRTLUoxMA==', // APUNTS-J10
+].map(c => atob(c).toUpperCase());
+
+// Si ACCESS_CODES está vacío, no se requiere código (modo sin protección)
+const ACCESS_REQUIRED = ACCESS_CODES.length > 0;
+
+function checkCode() {
+  const input = document.getElementById('login-code').value.trim().toUpperCase();
+  const errEl = document.getElementById('login-error');
+  const inputEl = document.getElementById('login-code');
+
+  if (!input) { errEl.textContent = 'Introduce tu código.'; return; }
+
+  if (ACCESS_CODES.includes(input)) {
+    localStorage.setItem('access_code', input);
+    document.getElementById('login-screen').style.display = 'none';
+    errEl.textContent = '';
+  } else {
+    errEl.textContent = 'Código incorrecto. Inténtalo de nuevo.';
+    inputEl.classList.add('error');
+    setTimeout(() => inputEl.classList.remove('error'), 400);
+  }
+}
+
+// Comprobar acceso al cargar
+(function() {
+  if (!ACCESS_REQUIRED) {
+    document.getElementById('login-screen').style.display = 'none';
+    return;
+  }
+  const saved = localStorage.getItem('access_code');
+  if (saved && ACCESS_CODES.includes(saved)) {
+    document.getElementById('login-screen').style.display = 'none';
+  }
+})();
 
 let uiLang = localStorage.getItem('ui_lang') || 'es';
 
