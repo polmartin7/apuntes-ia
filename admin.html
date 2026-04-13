@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — Clientes Voxnote</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f7f5; --page: #fff; --text: #1a1a1a; --text2: #444;
+    --muted: #888; --border: #e8e8e4; --accent: #2563eb; --green: #16a34a;
+    --red: #dc2626; --yellow: #d97706; --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --r: 10px;
+  }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .topbar {
+    background: var(--page); border-bottom: 1px solid var(--border);
+    padding: 0 32px; height: 60px; display: flex; align-items: center;
+    justify-content: space-between; position: sticky; top: 0; z-index: 10;
+  }
+  .topbar-logo { font-weight: 800; font-size: 1.05rem; letter-spacing: -.3px; }
+  .topbar-sub { font-size: .8rem; color: var(--muted); margin-top: 1px; }
+
+  .main { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card {
+    background: var(--page); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 20px 24px;
+  }
+  .stat-n { font-size: 2rem; font-weight: 800; letter-spacing: -1px; }
+  .stat-label { font-size: .8rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .06em; }
+
+  .section-title {
+    font-size: .75rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--muted); margin-bottom: 12px;
+  }
+
+  .client-table {
+    background: var(--page); border: 1px solid var(--border);
+    border-radius: var(--r); overflow: hidden; margin-bottom: 32px;
+  }
+  .client-row {
+    display: grid; grid-template-columns: 36px 1fr 140px 160px 100px 36px;
+    align-items: center; gap: 16px;
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    transition: background .1s;
+  }
+  .client-row:last-child { border-bottom: none; }
+  .client-row:hover { background: var(--bg); }
+  .client-row.header {
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--muted); background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .client-num { font-size: .8rem; color: var(--muted); text-align: center; }
+
+  .client-name-wrap { display: flex; flex-direction: column; gap: 2px; }
+  .client-name {
+    font-size: .93rem; font-weight: 600; color: var(--text);
+    border: none; background: transparent; font-family: var(--sans);
+    width: 100%; outline: none; padding: 0;
+  }
+  .client-name::placeholder { color: var(--muted); font-weight: 400; }
+  .client-email {
+    font-size: .78rem; color: var(--muted);
+    border: none; background: transparent; font-family: var(--sans);
+    width: 100%; outline: none;
+  }
+  .client-email::placeholder { color: #bbb; }
+
+  .code-badge {
+    font-family: var(--mono); font-size: .8rem; font-weight: 700;
+    background: #f0f4ff; color: var(--accent);
+    padding: 4px 10px; border-radius: 6px; cursor: pointer;
+    border: none; display: inline-flex; align-items: center; gap: 5px;
+    transition: background .1s;
+  }
+  .code-badge:hover { background: #dde8ff; }
+  .code-badge.copied { background: #dcfce7; color: var(--green); }
+
+  .status-toggle {
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+  }
+  .toggle-track {
+    width: 36px; height: 20px; border-radius: 10px;
+    background: #e5e7eb; position: relative; transition: background .2s;
+    flex-shrink: 0;
+  }
+  .toggle-track.on { background: var(--green); }
+  .toggle-thumb {
+    width: 16px; height: 16px; border-radius: 50%; background: #fff;
+    position: absolute; top: 2px; left: 2px; transition: transform .2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .toggle-track.on .toggle-thumb { transform: translateX(16px); }
+  .status-label { font-size: .8rem; color: var(--muted); }
+
+  .delete-btn {
+    background: none; border: none; cursor: pointer;
+    color: #ddd; font-size: 1rem; padding: 4px;
+    border-radius: 6px; transition: color .15s, background .15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .delete-btn:hover { color: var(--red); background: #fef2f2; }
+
+  .actions-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .btn {
+    padding: 10px 20px; border-radius: var(--r); font-family: var(--sans);
+    font-size: .88rem; font-weight: 600; cursor: pointer; border: none;
+    transition: opacity .15s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-secondary { background: var(--page); color: var(--text); border: 1px solid var(--border); }
+  .btn-green { background: var(--green); color: #fff; }
+
+  .url-box {
+    background: var(--page); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; margin-bottom: 32px; flex-wrap: wrap;
+  }
+  .url-text { font-family: var(--mono); font-size: .85rem; color: var(--accent); word-break: break-all; }
+  .url-label { font-size: .75rem; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .06em; }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: #1a1a1a; color: #fff;
+    padding: 12px 20px; border-radius: 10px;
+    font-size: .88rem; font-weight: 500;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity .2s, transform .2s;
+    pointer-events: none; z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 640px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .client-row { grid-template-columns: 1fr 120px; gap: 10px; }
+    .client-row.header { display: none; }
+    .col-num, .col-del { display: none; }
+  }
+/* ─── ADMIN LOGIN ─── */
+#admin-login {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.admin-login-box {
+  background: var(--page); border-radius: 16px; border: 1px solid var(--border2);
+  padding: 48px 40px; width: 100%; max-width: 380px;
+  display: flex; flex-direction: column; gap: 20px; text-align: center;
+  box-shadow: 0 8px 40px rgba(0,0,0,.1);
+}
+.admin-login-title { font-size: 1.2rem; font-weight: 800; letter-spacing: -.3px; }
+.admin-login-input {
+  width: 100%; padding: 13px 16px; border: 1.5px solid var(--border2);
+  border-radius: 10px; background: var(--bg); color: var(--text);
+  font-family: var(--sans); font-size: .95rem; outline: none; box-sizing: border-box;
+  transition: border-color .15s;
+}
+.admin-login-input:focus { border-color: var(--accent); }
+.admin-login-input.error { border-color: var(--red); animation: shake .3s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+.admin-login-btn {
+  width: 100%; padding: 13px; background: var(--accent); color: #fff;
+  border: none; border-radius: 10px; font-family: var(--sans);
+  font-size: .95rem; font-weight: 700; cursor: pointer;
+}
+.admin-login-btn:hover { opacity: .88; }
+.admin-login-err { font-size: .82rem; color: var(--red); min-height: 16px; }
+</style>
+</head>
+<body>
+
+<!-- ════ ADMIN LOGIN ════ -->
+<div id="admin-login">
+  <div class="admin-login-box">
+    <div style="font-size:2rem;">🔐</div>
+    <div class="admin-login-title">Admin — Voxnote</div>
+    <div style="font-size:.85rem;color:var(--muted)">Introduce la contraseña de administrador</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input class="admin-login-input" id="admin-pwd" type="password" placeholder="Contraseña"
+        onkeydown="if(event.key==='Enter')checkAdminPwd()">
+      <div class="admin-login-err" id="admin-err"></div>
+      <button class="admin-login-btn" onclick="checkAdminPwd()">Entrar →</button>
+    </div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-logo">📄 Admin — Voxnote</div>
+    <div class="topbar-sub">Panel de gestión de clientes</div>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <button class="btn btn-secondary" onclick="exportCSV()">⬇ Exportar CSV</button>
+    <button class="btn btn-primary" onclick="addClient()">+ Añadir cliente</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-n" id="stat-total">0</div>
+      <div class="stat-label">Clientes totales</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n" style="color:var(--green)" id="stat-active">0</div>
+      <div class="stat-label">Activos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n" style="color:var(--muted)" id="stat-inactive">0</div>
+      <div class="stat-label">Inactivos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n" style="color:var(--accent)" id="stat-notes">0</div>
+      <div class="stat-label">Apuntes generados</div>
+    </div>
+  </div>
+
+  <!-- URL de la app -->
+  <div class="section-title">URL de la aplicación</div>
+  <div class="url-box">
+    <div>
+      <div class="url-label">Enlace para compartir</div>
+      <div class="url-text">https://polmartin7.github.io/apuntes-ia/</div>
+    </div>
+    <button class="btn btn-secondary" onclick="copyURL()">📋 Copiar enlace</button>
+  </div>
+
+  <!-- Tabla clientes -->
+  <div class="section-title">Clientes</div>
+  <div class="client-table">
+    <div class="client-row header">
+      <div class="col-num">#</div>
+      <div>Nombre / Email</div>
+      <div>Código</div>
+      <div>Actividad</div>
+      <div>Estado</div>
+      <div></div>
+    </div>
+    <div id="client-list"></div>
+  </div>
+
+  <div class="actions-row">
+    <button class="btn btn-primary" onclick="addClient()">+ Añadir cliente</button>
+    <button class="btn btn-secondary" onclick="if(confirm('¿Borrar todos los datos?'))clearAll()">🗑 Borrar todo</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Admin auth ────────────────────────────────────────────────
+const ADMIN_PWD = atob('THVjYXNJbmRpYTAzLg==');
+
+function checkAdminPwd() {
+  const input = document.getElementById('admin-pwd').value;
+  const errEl = document.getElementById('admin-err');
+  const inputEl = document.getElementById('admin-pwd');
+  if (input === ADMIN_PWD) {
+    sessionStorage.setItem('admin_auth', '1');
+    document.getElementById('admin-login').style.display = 'none';
+    fetchActivity();
+  } else {
+    errEl.textContent = 'Contraseña incorrecta.';
+    inputEl.classList.add('error');
+    setTimeout(() => inputEl.classList.remove('error'), 400);
+  }
+}
+
+(function() {
+  if (sessionStorage.getItem('admin_auth') === '1') {
+    document.getElementById('admin-login').style.display = 'none';
+  }
+})();
+
+const ALL_CODES = [
+  'POL-ADMIN',
+  'APUNTS-A1','APUNTS-B2','APUNTS-C3','APUNTS-D4','APUNTS-E5',
+  'APUNTS-F6','APUNTS-G7','APUNTS-H8','APUNTS-I9','APUNTS-J10',
+];
+const APP_URL = 'https://polmartin7.github.io/apuntes-ia/';
+const BLOB_URL = 'https://jsonblob.com/api/jsonBlob/019d8865-468f-7056-9a08-da205d3f6969';
+
+let activityData = {};
+
+// ── Storage local ─────────────────────────────────────────────
+function loadClients() { return JSON.parse(localStorage.getItem('admin_clients') || '[]'); }
+function saveClients(arr) { localStorage.setItem('admin_clients', JSON.stringify(arr)); }
+function nextCode(clients) {
+  const used = clients.map(c => c.code);
+  return ALL_CODES.filter(c => c !== 'POL-ADMIN').find(c => !used.includes(c)) || null;
+}
+
+// ── Actividad real ────────────────────────────────────────────
+async function fetchActivity() {
+  try {
+    const res = await fetch(BLOB_URL + '?t=' + Date.now());
+    const data = await res.json();
+    activityData = data.clients || {};
+  } catch(_) {}
+  render();
+}
+
+function timeAgo(iso) {
+  if (!iso) return '—';
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  const h = Math.floor(m / 60);
+  const d = Math.floor(h / 24);
+  if (m < 2) return 'Ahora mismo';
+  if (m < 60) return `Hace ${m}min`;
+  if (h < 24) return `Hace ${h}h`;
+  if (d < 7) return `Hace ${d}d`;
+  return new Date(iso).toLocaleDateString('es');
+}
+
+function esc(s) { return s ? String(s).replace(/"/g,'&quot;') : ''; }
+
+// ── Render ────────────────────────────────────────────────────
+function render() {
+  const clients = loadClients();
+  const list = document.getElementById('client-list');
+  const active = clients.filter(c => c.active).length;
+  const totalNotes = clients.reduce((sum, c) => sum + (activityData[c.code]?.notesGenerated || 0), 0);
+
+  document.getElementById('stat-total').textContent = clients.length;
+  document.getElementById('stat-active').textContent = active;
+  document.getElementById('stat-inactive').textContent = clients.length - active;
+  document.getElementById('stat-notes').textContent = totalNotes;
+
+  if (!clients.length) {
+    list.innerHTML = `<div style="padding:40px;text-align:center;color:var(--muted);font-size:.9rem;">
+      No hay clientes todavía.<br>Pulsa <strong>+ Añadir cliente</strong> para empezar.
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = clients.map((c, i) => {
+    const act = activityData[c.code] || {};
+    const seen = timeAgo(act.lastSeen);
+    const hasActivity = !!act.lastSeen;
+    const seenColor = !hasActivity ? 'var(--muted)' : act.logins > 0 ? 'var(--green)' : 'var(--muted)';
+    return `
+    <div class="client-row" id="row-${c.id}">
+      <div class="client-num col-num">${i + 1}</div>
+      <div class="client-name-wrap">
+        <input class="client-name" value="${esc(c.name)}" placeholder="Nombre del cliente"
+          onchange="updateField(${c.id},'name',this.value)">
+        <input class="client-email" value="${esc(c.email)}" placeholder="email (opcional)"
+          onchange="updateField(${c.id},'email',this.value)">
+      </div>
+      <div>
+        <button class="code-badge" id="code-btn-${c.id}" onclick="copyCode(${c.id},'${c.code}')">
+          🔑 ${c.code}
+        </button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <div style="font-size:.8rem;font-weight:600;color:${seenColor}">${seen}</div>
+        <div style="font-size:.75rem;color:var(--muted)">
+          ${hasActivity ? `${act.logins||0} entradas · ${act.notesGenerated||0} apuntes` : 'Sin actividad'}
+        </div>
+        ${act.device ? `<div style="font-size:.72rem;color:var(--muted)">${act.device} · ${act.browser||''}</div>` : ''}
+      </div>
+      <div>
+        <label class="status-toggle" onclick="toggleActive(${c.id})">
+          <div class="toggle-track ${c.active ? 'on' : ''}">
+            <div class="toggle-thumb"></div>
+          </div>
+          <span class="status-label">${c.active ? 'Activo' : 'Inactivo'}</span>
+        </label>
+      </div>
+      <div>
+        <button class="delete-btn col-del" onclick="deleteClient(${c.id})" title="Eliminar">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Acciones ──────────────────────────────────────────────────
+function addClient() {
+  const clients = loadClients();
+  const code = nextCode(clients);
+  if (!code) { toast('No quedan códigos disponibles.'); return; }
+  const id = Date.now();
+  clients.push({ id, name: '', email: '', code, active: true, created: new Date().toISOString().slice(0,10) });
+  saveClients(clients);
+  render();
+  setTimeout(() => { const inputs = document.querySelectorAll('.client-name'); if (inputs.length) inputs[inputs.length-1].focus(); }, 50);
+}
+
+function updateField(id, field, value) {
+  const clients = loadClients();
+  const c = clients.find(x => x.id === id);
+  if (c) { c[field] = value; saveClients(clients); }
+}
+
+function toggleActive(id) {
+  const clients = loadClients();
+  const c = clients.find(x => x.id === id);
+  if (c) { c.active = !c.active; saveClients(clients); render(); }
+}
+
+function deleteClient(id) {
+  if (!confirm('¿Eliminar este cliente?')) return;
+  saveClients(loadClients().filter(x => x.id !== id));
+  render(); toast('Cliente eliminado');
+}
+
+function clearAll() { if(confirm('¿Borrar todo?')) { localStorage.removeItem('admin_clients'); render(); } }
+
+function copyCode(id, code) {
+  const msg = `Hola! Aquí tienes tu acceso a Voxnote:\n\n🔗 ${APP_URL}\n🔑 Código: ${code}\n\nIntroduce el código al entrar y queda guardado en tu navegador.`;
+  navigator.clipboard.writeText(msg).then(() => {
+    const btn = document.getElementById(`code-btn-${id}`);
+    if (btn) { btn.classList.add('copied'); btn.textContent = '✅ Copiado'; setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = `🔑 ${code}`; }, 1800); }
+    toast('Mensaje copiado — pégalo en WhatsApp o email');
+  });
+}
+
+function copyURL() { navigator.clipboard.writeText(APP_URL).then(() => toast('URL copiada')); }
+
+function exportCSV() {
+  const clients = loadClients();
+  if (!clients.length) { toast('No hay clientes'); return; }
+  const rows = [['Nombre','Email','Código','Estado','Última vez','Entradas','Apuntes','Dispositivo']];
+  clients.forEach(c => {
+    const act = activityData[c.code] || {};
+    rows.push([c.name, c.email, c.code, c.active?'Activo':'Inactivo',
+      act.lastSeen ? new Date(act.lastSeen).toLocaleString('es') : '—',
+      act.logins||0, act.notesGenerated||0, act.device||'—']);
+  });
+  const csv = rows.map(r => r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = 'clientes_voxnote.csv'; a.click();
+}
+
+function copyURL() {
+  navigator.clipboard.writeText(APP_URL).then(() => toast('URL copiada'));
+}
+
+function exportCSV() {
+  const clients = loadClients();
+  if (!clients.length) { toast('No hay clientes para exportar'); return; }
+  const rows = [['Nombre','Email','Código','Estado','Fecha alta']];
+  clients.forEach(c => rows.push([c.name, c.email, c.code, c.active ? 'Activo' : 'Inactivo', c.created]));
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'clientes_apuntes.csv';
+  a.click();
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// Arrancar: solo si ya está autenticado
+if (sessionStorage.getItem('admin_auth') === '1') {
+  fetchActivity();
+  setInterval(fetchActivity, 30000);
+}
+</script>
+</body>
+</html>
