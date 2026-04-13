@@ -1118,7 +1118,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
             </button>
             <div class="rec-timer" id="rec-timer" style="display:none">
               <span class="rec-pulse"></span>
-              <span id="rec-time">00:00</span>
+              <span id="rec-time">10:00</span>
             </div>
             <div class="rec-status" id="rec-status" data-i18n="rec-idle">Pulsa para grabar desde el micrófono</div>
           </div>
@@ -2780,6 +2780,7 @@ function dropAudio(e) {
 
 // Grabación en directo
 let mediaRecorder = null, audioChunks = [], recInterval = null, recSeconds = 0, recordedBlob = null;
+const MAX_REC_SECS = 600; // 10 minutos por grabación
 
 async function toggleRecord() {
   if (mediaRecorder && mediaRecorder.state === 'recording') {
@@ -2821,9 +2822,14 @@ async function startRecord() {
 
     recInterval = setInterval(() => {
       recSeconds++;
-      const m = String(Math.floor(recSeconds / 60)).padStart(2, '0');
-      const s = String(recSeconds % 60).padStart(2, '0');
+      const remaining = MAX_REC_SECS - recSeconds;
+      const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+      const s = String(remaining % 60).padStart(2, '0');
       document.getElementById('rec-time').textContent = `${m}:${s}`;
+      if (remaining <= 0) {
+        stopRecord();
+        document.getElementById('rec-status').textContent = '⏱ Límite de 10 min alcanzado. Transcríbelo y graba otro si necesitas más.';
+      }
     }, 1000);
 
   } catch(e) {
@@ -2956,9 +2962,14 @@ async function handleAudio(file) {
 
     if (!transcription) throw new Error('La transcripción volvió vacía. Comprueba que el audio tiene voz.');
 
-    document.getElementById('txt').value = transcription;
+    // Añadir al textarea (no reemplazar, para permitir varias grabaciones seguidas)
+    const area = document.getElementById('txt');
+    area.value = area.value ? area.value + '\n\n' + transcription : transcription;
     wc();
-    status.innerHTML = `✅ Listo — ${transcription.split(/\s+/).length} palabras transcritas`;
+    const total = area.value.trim().split(/\s+/).length;
+    status.innerHTML = `✅ Transcripción añadida — ${total} palabras en total. Puedes grabar otro fragmento.`;
+    // Resetear grabador para que pueda grabar otro audio
+    setTimeout(() => resetAudio(), 2500);
 
   } catch(e) {
     alert('Error al transcribir:\n\n' + e.message + '\n\nComprueba que la clave API es correcta y el archivo es un audio válido.');
