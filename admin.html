@@ -8,7 +8,7 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --bg: #f7f7f5; --page: #fff; --text: #1a1a1a; --text2: #444;
-    --muted: #888; --border: #e8e8e4; --accent: #2563eb; --green: #16a34a;
+    --muted: #888; --border: #e8e8e4; --border2: #d0d0cc; --accent: #2563eb; --green: #16a34a;
     --red: #dc2626; --yellow: #d97706; --sans: 'Inter', system-ui, sans-serif;
     --mono: 'JetBrains Mono', 'Fira Code', monospace;
     --r: 10px;
@@ -356,15 +356,12 @@ const ADMIN_PWD = atob('THVjYXNJbmRpYTAzLg==');
 
 function checkAdminPwd() {
   const input = document.getElementById('admin-pwd').value;
-  const errEl = document.getElementById('admin-err');
-  const inputEl = document.getElementById('admin-pwd');
   if (input === ADMIN_PWD) {
     sessionStorage.setItem('admin_auth', '1');
     document.getElementById('admin-login').style.display = 'none';
-    fetchActivity();
-    setInterval(fetchActivity, 30000);
-    renderCal();
   } else {
+    const errEl = document.getElementById('admin-err');
+    const inputEl = document.getElementById('admin-pwd');
     errEl.textContent = 'Contraseña incorrecta.';
     inputEl.classList.add('error');
     setTimeout(() => inputEl.classList.remove('error'), 400);
@@ -562,14 +559,6 @@ function toast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
 }
 
-let toastTimer;
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
-}
-
 // ── Calendario de exámenes ────────────────────────────────────
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
@@ -691,11 +680,12 @@ document.getElementById('exam-modal').addEventListener('click', function(e) {
   if (e.target === this) closeExamModal();
 });
 
-// Arrancar: solo si ya está autenticado
+// Arrancar
+render();
+renderCal();
 if (sessionStorage.getItem('admin_auth') === '1') {
   fetchActivity();
   setInterval(fetchActivity, 30000);
-  renderCal();
 }
 </script>
 </body>
