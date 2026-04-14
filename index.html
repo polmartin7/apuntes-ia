@@ -1638,6 +1638,19 @@ async function trackActivity(code, type) {
     });
 })();
 
+// Verificar cada 2 minutos si el código sigue activo
+setInterval(async () => {
+  const code = localStorage.getItem('access_code');
+  if (!code) return;
+  try {
+    const data = await fetch(BLOB_URL + '?t=' + Date.now()).then(r => r.json());
+    if ((data.blocked || []).includes(code)) {
+      localStorage.removeItem('access_code');
+      document.getElementById('login-screen').style.display = '';
+    }
+  } catch(_) {}
+}, 2 * 60 * 1000);
+
 let uiLang = localStorage.getItem('ui_lang') || 'es';
 
 function applyLang(lang) {
