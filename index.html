@@ -1883,7 +1883,61 @@ function toggleDark() {
 
 // ── Exportar PDF ──────────────────────────────────────────────
 function exportPDF() {
-  window.print();
+  if (!currentNotes) { window.print(); return; }
+  // Generar texto limpio para copiar
+  const n = currentNotes;
+  let txt = `${n.subject || 'Apuntes'}\n${'═'.repeat(60)}\n\n`;
+  if (n.summary) txt += `RESUMEN\n${n.summary}\n\n`;
+  (n.sections || []).forEach(s => {
+    txt += `▸ ${s.title || s.heading || ''}\n`;
+    (s.items || []).forEach(it => txt += `  • ${typeof it === 'string' ? it : it.text || ''}\n`);
+    txt += '\n';
+  });
+  if ((n.important || []).length) {
+    txt += `IMPORTANTE\n`;
+    n.important.forEach(i => txt += `  ★ ${i}\n`);
+    txt += '\n';
+  }
+  if ((n.concepts || []).length) {
+    txt += `CONCEPTOS CLAVE\n`;
+    n.concepts.forEach(c => txt += `  ${c.term}: ${c.definition}\n`);
+    txt += '\n';
+  }
+  // Mostrar opciones
+  const picker = document.createElement('div');
+  picker.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  picker.innerHTML = `<div style="background:var(--page);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;
+    box-shadow:0 8px 40px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:12px;">
+    <div style="font-size:1rem;font-weight:800;text-align:center;">Exportar apuntes</div>
+    <button id="exp-copy" style="display:flex;align-items:center;gap:12px;background:var(--bg);border:1.5px solid var(--border2);
+      border-radius:12px;padding:14px 18px;cursor:pointer;font-family:var(--sans);">
+      <span style="font-size:1.4rem;">📋</span>
+      <div style="text-align:left"><div style="font-weight:700;font-size:.9rem;">Copiar texto</div>
+      <div style="font-size:.75rem;color:var(--muted);">Pegar en Word, Notes, etc.</div></div>
+    </button>
+    <button id="exp-print" style="display:flex;align-items:center;gap:12px;background:var(--bg);border:1.5px solid var(--border2);
+      border-radius:12px;padding:14px 18px;cursor:pointer;font-family:var(--sans);">
+      <span style="font-size:1.4rem;">🖨️</span>
+      <div style="text-align:left"><div style="font-weight:700;font-size:.9rem;">Imprimir / PDF</div>
+      <div style="font-size:.75rem;color:var(--muted);">Guardar como PDF desde el navegador</div></div>
+    </button>
+    <button id="exp-cancel" style="background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;font-family:var(--sans);">Cancelar</button>
+  </div>`;
+  document.body.appendChild(picker);
+  picker.querySelector('#exp-copy').onclick = () => {
+    navigator.clipboard.writeText(txt).then(() => { document.body.removeChild(picker); showToast('✓ Copiado al portapapeles'); });
+  };
+  picker.querySelector('#exp-print').onclick = () => { document.body.removeChild(picker); setTimeout(()=>window.print(),100); };
+  picker.querySelector('#exp-cancel').onclick = () => document.body.removeChild(picker);
+  picker.onclick = e => { if (e.target === picker) document.body.removeChild(picker); };
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:12px 20px;border-radius:10px;font-size:.88rem;font-weight:500;z-index:99999;transition:opacity .3s;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; setTimeout(()=>document.body.removeChild(t),300); }, 2200);
 }
 
 // ── Buscador biblioteca ───────────────────────────────────────
@@ -1918,17 +1972,21 @@ function esquemaLabel(tipo) {
   return '🔗 Mapa de relaciones';
 }
 
-async function startEsquema() {
+function startEsquema() {
   if (!currentNotes) return;
+  document.getElementById('esquema-picker').style.display = 'flex';
+}
+
+async function runEsquema(tipo) {
   const apikey = localStorage.getItem('gk') || '';
   if (!apikey) { alert('Necesitas la clave API de Groq.'); return; }
+  document.getElementById('esquema-picker').style.display = 'none';
   show('esquema');
-  const tipo = detectSubjectType(currentNotes.subject || '');
   document.getElementById('esquema-tipo-label').textContent = esquemaLabel(tipo);
   document.getElementById('esquema-body').innerHTML = `
     <div style="text-align:center;padding:60px 20px;">
       <div class="loader" style="margin:0 auto 16px;"></div>
-      <div style="color:var(--muted);font-size:.9rem;">Generando esquema con IA...</div>
+      <div style="color:var(--muted);font-size:.9rem;">Generando esquema...</div>
     </div>`;
   try {
     const data = await generateEsquema(currentNotes, apikey, tipo);
@@ -3505,5 +3563,49 @@ if (sk) document.getElementById('apikey').value = sk;
 // Abrir biblioteca si hay apuntes, si no la pantalla de entrada
 if (loadNotes().length > 0) { openLib(); } else { show('inp'); }
 </script>
+
+<!-- ── Modal selector tipo esquema ── -->
+<div id="esquema-picker" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:9999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--page);border-radius:20px;padding:28px 24px;width:100%;max-width:380px;
+    box-shadow:0 8px 40px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:12px;">
+    <div style="font-size:1rem;font-weight:800;text-align:center;margin-bottom:4px;">¿Qué tipo de esquema?</div>
+    <button onclick="runEsquema('arbre')" style="display:flex;align-items:center;gap:14px;
+      background:var(--bg);border:1.5px solid var(--border2);border-radius:12px;
+      padding:14px 18px;cursor:pointer;text-align:left;font-family:var(--sans);transition:background .1s;"
+      onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='var(--bg)'">
+      <span style="font-size:1.5rem;">🌳</span>
+      <div><div style="font-weight:700;font-size:.9rem;">Árbol de clasificación</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">Categorías y subcategorías jerárquicas</div></div>
+    </button>
+    <button onclick="runEsquema('timeline')" style="display:flex;align-items:center;gap:14px;
+      background:var(--bg);border:1.5px solid var(--border2);border-radius:12px;
+      padding:14px 18px;cursor:pointer;text-align:left;font-family:var(--sans);transition:background .1s;"
+      onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='var(--bg)'">
+      <span style="font-size:1.5rem;">📅</span>
+      <div><div style="font-weight:700;font-size:.9rem;">Línea de tiempo</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">Eventos ordenados cronológicamente</div></div>
+    </button>
+    <button onclick="runEsquema('temes')" style="display:flex;align-items:center;gap:14px;
+      background:var(--bg);border:1.5px solid var(--border2);border-radius:12px;
+      padding:14px 18px;cursor:pointer;text-align:left;font-family:var(--sans);transition:background .1s;"
+      onmouseover="this.style.background='#fdf4ff'" onmouseout="this.style.background='var(--bg)'">
+      <span style="font-size:1.5rem;">🎭</span>
+      <div><div style="font-weight:700;font-size:.9rem;">Mapa de temas</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">Temas principales y sus elementos clave</div></div>
+    </button>
+    <button onclick="runEsquema('mapa')" style="display:flex;align-items:center;gap:14px;
+      background:var(--bg);border:1.5px solid var(--border2);border-radius:12px;
+      padding:14px 18px;cursor:pointer;text-align:left;font-family:var(--sans);transition:background .1s;"
+      onmouseover="this.style.background='#fff7ed'" onmouseout="this.style.background='var(--bg)'">
+      <span style="font-size:1.5rem;">🔗</span>
+      <div><div style="font-weight:700;font-size:.9rem;">Mapa de relaciones</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">Conceptos clave y cómo se conectan</div></div>
+    </button>
+    <button onclick="document.getElementById('esquema-picker').style.display='none'"
+      style="margin-top:4px;background:none;border:none;color:var(--muted);font-size:.85rem;
+      cursor:pointer;font-family:var(--sans);padding:4px;">Cancelar</button>
+  </div>
+</div>
 </body>
 </html>
