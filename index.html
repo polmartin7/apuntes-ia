@@ -1983,60 +1983,141 @@ NOTES:\n${context}`;
 }
 
 function renderEsquema(data, tipo) {
-  let html = '';
-  if (tipo === 'timeline') {
-    html = `<div style="position:relative;padding-left:32px;border-left:2px solid var(--border2);display:flex;flex-direction:column;gap:0;">`;
-    data.forEach((e, i) => {
-      html += `
-        <div style="position:relative;padding:0 0 28px 24px;">
-          <div style="position:absolute;left:-9px;top:4px;width:16px;height:16px;border-radius:50%;background:var(--text);border:3px solid var(--bg);"></div>
-          <div style="font-size:.75rem;font-weight:700;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">${esc(e.year)}</div>
-          <div style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:4px;">${esc(e.event)}</div>
-          <div style="font-size:.88rem;color:var(--text2);line-height:1.5;">${esc(e.detail)}</div>
-        </div>`;
-    });
-    html += `</div>`;
-  } else if (tipo === 'arbre') {
-    html = `<div style="display:flex;flex-direction:column;gap:16px;">`;
-    data.forEach(cat => {
-      html += `
-        <div style="background:var(--page);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
-          <div style="padding:12px 16px;background:var(--accent-bg);border-bottom:1px solid var(--border);font-weight:700;font-size:.95rem;">${esc(cat.categoria)}</div>
-          <div style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px;">
-            ${(cat.subcategorias || []).map(s => `<span style="background:var(--bg);border:1px solid var(--border2);border-radius:20px;padding:4px 12px;font-size:.85rem;">${esc(s)}</span>`).join('')}
-          </div>
-        </div>`;
-    });
-    html += `</div>`;
-  } else if (tipo === 'temes') {
-    html = `<div style="display:flex;flex-direction:column;gap:16px;">`;
-    data.forEach(t => {
-      html += `
-        <div style="background:var(--page);border:1px solid var(--border);border-radius:var(--r);padding:16px;">
-          <div style="font-weight:700;font-size:1rem;margin-bottom:8px;">${esc(t.tema)}</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-            ${(t.elementos || []).map(el => `<span style="background:var(--bg);border:1px solid var(--border2);border-radius:20px;padding:3px 10px;font-size:.83rem;">${esc(el)}</span>`).join('')}
-          </div>
-          <div style="font-size:.85rem;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;margin-top:4px;">${esc(t.relacion)}</div>
-        </div>`;
-    });
-    html += `</div>`;
-  } else {
-    html = `<div style="display:flex;flex-direction:column;gap:16px;">`;
-    data.forEach(c => {
-      html += `
-        <div style="background:var(--page);border:1px solid var(--border);border-radius:var(--r);padding:16px;">
-          <div style="font-weight:700;font-size:1rem;margin-bottom:6px;">${esc(c.concepto)}</div>
-          <div style="font-size:.85rem;color:var(--text2);margin-bottom:10px;">${esc(c.descripcion)}</div>
-          ${(c.relacionado||[]).length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
-            <span style="font-size:.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Relacionado con:</span>
-            ${(c.relacionado||[]).map(r => `<span style="background:var(--bg);border:1px solid var(--border2);border-radius:20px;padding:3px 10px;font-size:.83rem;">${esc(r)}</span>`).join('')}
-          </div>` : ''}
-        </div>`;
-    });
-    html += `</div>`;
+  const subject = (currentNotes && currentNotes.subject) ? currentNotes.subject : 'Esquema';
+
+  // ── Paleta de colores por rama (cíclica) ──
+  const PALETTES = [
+    { bg:'#eff6ff', border:'#3b82f6', text:'#1d4ed8' },
+    { bg:'#f0fdf4', border:'#22c55e', text:'#15803d' },
+    { bg:'#fdf4ff', border:'#a855f7', text:'#7e22ce' },
+    { bg:'#fff7ed', border:'#f97316', text:'#c2410c' },
+    { bg:'#fef2f2', border:'#ef4444', text:'#b91c1c' },
+  ];
+
+  // ── Nodo raíz ──
+  function rootNode(label) {
+    return `<div style="display:inline-flex;align-items:center;gap:8px;background:var(--text);color:var(--bg);
+      padding:10px 20px;border-radius:100px;font-weight:800;font-size:1rem;letter-spacing:-.2px;
+      box-shadow:0 4px 16px rgba(0,0,0,.15);margin-bottom:4px;">${esc(label)}</div>`;
   }
-  document.getElementById('esquema-body').innerHTML = html;
+
+  // ── Nodo rama (nivel 1) ──
+  function branchNode(label, p) {
+    return `<div style="display:inline-flex;align-items:center;background:${p.bg};
+      border:1.5px solid ${p.border};color:${p.text};
+      padding:7px 16px;border-radius:100px;font-weight:700;font-size:.9rem;">${esc(label)}</div>`;
+  }
+
+  // ── Nodo hoja (nivel 2) ──
+  function leafNode(label, p) {
+    return `<div style="display:inline-flex;align-items:center;background:#fff;
+      border:1px solid #e5e7eb;color:#374151;
+      padding:5px 13px;border-radius:100px;font-size:.82rem;font-weight:500;">${esc(label)}</div>`;
+  }
+
+  // ── Construye árbol: raíz → ramas → hojas ──
+  function buildTree(rootLabel, branches) {
+    // branches: [{label, children:[string]}]
+    let h = `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:0;font-family:var(--sans);">`;
+
+    // Raíz
+    h += `<div style="padding-left:16px;">${rootNode(rootLabel)}</div>`;
+
+    // Línea vertical desde raíz
+    branches.forEach((branch, bi) => {
+      const isLastBranch = bi === branches.length - 1;
+      const p = PALETTES[bi % PALETTES.length];
+      const children = branch.children || [];
+
+      // Conector raíz → rama
+      h += `<div style="display:flex;align-items:stretch;">`;
+      // Línea vertical
+      h += `<div style="display:flex;flex-direction:column;align-items:center;width:32px;flex-shrink:0;">
+        <div style="width:2px;background:#d1d5db;flex:1;min-height:16px;"></div>
+        <div style="width:2px;background:${isLastBranch?'transparent':'#d1d5db'};flex:1;"></div>
+      </div>`;
+
+      h += `<div style="flex:1;padding:0 0 0 0;">`;
+        // Línea horizontal + rama
+        h += `<div style="display:flex;align-items:center;gap:0;margin:4px 0;">
+          <div style="width:20px;height:2px;background:#d1d5db;flex-shrink:0;"></div>
+          ${branchNode(branch.label, p)}
+        </div>`;
+
+        // Hojas de esta rama
+        if (children.length) {
+          children.forEach((child, ci) => {
+            const isLastLeaf = ci === children.length - 1;
+            h += `<div style="display:flex;align-items:stretch;margin-left:20px;">`;
+            // Línea vertical hoja
+            h += `<div style="display:flex;flex-direction:column;align-items:center;width:24px;flex-shrink:0;">
+              <div style="width:2px;background:${p.border};opacity:.4;flex:1;min-height:12px;"></div>
+              <div style="width:2px;background:${isLastLeaf?'transparent':p.border};opacity:.4;flex:1;"></div>
+            </div>`;
+            h += `<div style="display:flex;align-items:center;gap:0;margin:3px 0;">
+              <div style="width:14px;height:2px;background:${p.border};opacity:.4;flex-shrink:0;"></div>
+              ${leafNode(child, p)}
+            </div>`;
+            h += `</div>`;
+          });
+        }
+      h += `</div></div>`;
+    });
+
+    h += `</div>`;
+    return h;
+  }
+
+  let html = '';
+
+  if (tipo === 'timeline') {
+    // Timeline: línea vertical con nodos circulares
+    html = `<div style="position:relative;padding-left:28px;display:flex;flex-direction:column;gap:0;">
+      <div style="position:absolute;left:7px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--text),#d1d5db);border-radius:2px;"></div>`;
+    data.forEach((e, i) => {
+      const isFirst = i === 0;
+      html += `
+        <div style="position:relative;padding:0 0 ${i < data.length-1 ? '28' : '0'}px 28px;">
+          <div style="position:absolute;left:-7px;top:3px;width:16px;height:16px;border-radius:50%;
+            background:${isFirst ? 'var(--text)' : 'var(--page)'};
+            border:2.5px solid ${isFirst ? 'var(--text)' : '#9ca3af'};
+            box-shadow:0 0 0 3px var(--bg);"></div>
+          <div style="font-size:.7rem;font-weight:800;font-family:var(--mono);color:var(--muted);
+            text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">${esc(e.year)}</div>
+          <div style="font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:4px;">${esc(e.event)}</div>
+          <div style="font-size:.84rem;color:var(--text2);line-height:1.55;">${esc(e.detail)}</div>
+        </div>`;
+    });
+    html += `</div>`;
+
+  } else if (tipo === 'arbre') {
+    const branches = data.map(cat => ({
+      label: cat.categoria,
+      children: cat.subcategorias || []
+    }));
+    html = buildTree(subject, branches);
+
+  } else if (tipo === 'temes') {
+    const branches = data.map(t => ({
+      label: t.tema,
+      children: [...(t.elementos || []), ...(t.relacion ? [`↳ ${t.relacion}`] : [])]
+    }));
+    html = buildTree(subject, branches);
+
+  } else {
+    // relaciones
+    const branches = data.map(c => ({
+      label: c.concepto,
+      children: [
+        ...(c.descripcion ? [c.descripcion] : []),
+        ...(c.relacionado || []).map(r => `⟶ ${r}`)
+      ]
+    }));
+    html = buildTree(subject, branches);
+  }
+
+  document.getElementById('esquema-body').innerHTML =
+    `<div style="overflow-x:auto;padding-bottom:8px;">${html}</div>`;
 }
 
 // ── Quiz ─────────────────────────────────────────────────────
