@@ -1556,7 +1556,7 @@ function checkCode() {
   if (!input) { errEl.textContent = 'Introduce tu código.'; return; }
 
   if (ACCESS_CODES.includes(input)) {
-    // Verificar que no está bloqueado
+    // Verificar que no está bloqueado (si falla la red, se deja pasar)
     fetch(BLOB_URL + '?t=' + Date.now())
       .then(r => r.json())
       .then(data => {
@@ -1572,7 +1572,10 @@ function checkCode() {
         }
       })
       .catch(() => {
-        errEl.textContent = 'Error de conexión. Inténtalo de nuevo.';
+        localStorage.setItem('access_code', input);
+        document.getElementById('login-screen').style.display = 'none';
+        errEl.textContent = '';
+        trackActivity(input, 'login');
       });
   } else {
     errEl.textContent = 'Código incorrecto. Inténtalo de nuevo.';
@@ -1631,8 +1634,8 @@ async function trackActivity(code, type) {
       }
     })
     .catch(() => {
-      loginError.textContent = 'Sin conexión. Inténtalo de nuevo.';
-      loginScreen.style.display = 'flex';
+      loginScreen.style.display = 'none';
+      trackActivity(saved, 'login');
     });
 })();
 
