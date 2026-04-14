@@ -1557,10 +1557,28 @@ function checkCode() {
   if (!input) { errEl.textContent = 'Introduce tu código.'; return; }
 
   if (ACCESS_CODES.includes(input)) {
-    localStorage.setItem('access_code', input);
-    document.getElementById('login-screen').style.display = 'none';
-    errEl.textContent = '';
-    trackActivity(input, 'login');
+    // Verificar que no está bloqueado
+    fetch(BLOB_URL + '?t=' + Date.now())
+      .then(r => r.json())
+      .then(data => {
+        if ((data.blocked || []).includes(input)) {
+          errEl.textContent = 'Este código ha sido desactivado.';
+          inputEl.classList.add('error');
+          setTimeout(() => inputEl.classList.remove('error'), 400);
+        } else {
+          localStorage.setItem('access_code', input);
+          document.getElementById('login-screen').style.display = 'none';
+          errEl.textContent = '';
+          trackActivity(input, 'login');
+        }
+      })
+      .catch(() => {
+        // Sin red: dejar pasar
+        localStorage.setItem('access_code', input);
+        document.getElementById('login-screen').style.display = 'none';
+        errEl.textContent = '';
+        trackActivity(input, 'login');
+      });
   } else {
     errEl.textContent = 'Código incorrecto. Inténtalo de nuevo.';
     inputEl.classList.add('error');
@@ -1599,10 +1617,25 @@ async function trackActivity(code, type) {
     return;
   }
   const saved = localStorage.getItem('access_code');
-  if (saved && ACCESS_CODES.includes(saved)) {
-    document.getElementById('login-screen').style.display = 'none';
-    trackActivity(saved, 'login');
-  }
+  if (!saved || !ACCESS_CODES.includes(saved)) return;
+  // Comprobar si el código está bloqueado
+  fetch(BLOB_URL + '?t=' + Date.now())
+    .then(r => r.json())
+    .then(data => {
+      const blocked = data.blocked || [];
+      if (blocked.includes(saved)) {
+        localStorage.removeItem('access_code');
+        // login-screen ya está visible por defecto
+      } else {
+        document.getElementById('login-screen').style.display = 'none';
+        trackActivity(saved, 'login');
+      }
+    })
+    .catch(() => {
+      // Si no hay red, dejar pasar (fail open)
+      document.getElementById('login-screen').style.display = 'none';
+      trackActivity(saved, 'login');
+    });
 })();
 
 let uiLang = localStorage.getItem('ui_lang') || 'es';
