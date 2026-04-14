@@ -1622,19 +1622,17 @@ async function trackActivity(code, type) {
   fetch(BLOB_URL + '?t=' + Date.now())
     .then(r => r.json())
     .then(data => {
-      const blocked = data.blocked || [];
-      if (blocked.includes(saved)) {
+      if ((data.blocked || []).includes(saved)) {
         localStorage.removeItem('access_code');
-        // login-screen ya está visible por defecto
+        document.getElementById('login-error').textContent = 'Tu acceso ha sido desactivado.';
       } else {
         document.getElementById('login-screen').style.display = 'none';
         trackActivity(saved, 'login');
       }
     })
     .catch(() => {
-      // Si no hay red, dejar pasar (fail open)
-      document.getElementById('login-screen').style.display = 'none';
-      trackActivity(saved, 'login');
+      // Sin red: mostrar pantalla de código igualmente
+      document.getElementById('login-error').textContent = 'Sin conexión. Inténtalo de nuevo.';
     });
 })();
 
@@ -1646,7 +1644,8 @@ setInterval(async () => {
     const data = await fetch(BLOB_URL + '?t=' + Date.now()).then(r => r.json());
     if ((data.blocked || []).includes(code)) {
       localStorage.removeItem('access_code');
-      document.getElementById('login-screen').style.display = '';
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('login-error').textContent = 'Tu acceso ha sido desactivado.';
     }
   } catch(_) {}
 }, 2 * 60 * 1000);
