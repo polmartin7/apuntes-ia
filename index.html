@@ -953,76 +953,6 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 }
 .note-card-del:hover { background:#fff0f0; color:#c00; }
 
-/* ─── CALCULADORA DE NOTAS ─── */
-.grade-calc {
-  background: var(--accent-bg);
-  border: 1px solid #bfdbfe;
-  border-radius: var(--r);
-  padding: 16px 18px;
-  margin-bottom: 14px;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.grade-calc-head {
-  display: grid; grid-template-columns: 1fr 72px 80px 28px;
-  gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #bfdbfe;
-}
-.grade-calc-head span {
-  font-size: .65rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .07em; color: var(--accent);
-}
-.grade-calc-row {
-  display: grid; grid-template-columns: 1fr 72px 80px 28px;
-  gap: 8px; align-items: center;
-}
-.gc-input {
-  background: var(--page); border: 1px solid var(--border);
-  border-radius: 6px; color: var(--text); font-family: var(--sans);
-  font-size: .82rem; padding: 6px 8px; outline: none; width: 100%;
-  transition: border-color .15s;
-}
-.gc-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(37,99,235,.1); }
-.gc-num { text-align: center; font-family: var(--mono); font-size: .82rem; }
-.gc-del {
-  background: none; border: none; color: var(--muted); cursor: pointer;
-  font-size: .75rem; padding: 4px 6px; border-radius: 4px;
-  transition: background .15s, color .15s; line-height: 1;
-}
-.gc-del:hover { background: #fff0f0; color: #c00; }
-.grade-calc-footer {
-  display: flex; align-items: center; justify-content: space-between;
-  padding-top: 10px; border-top: 1px solid #bfdbfe; gap: 12px; flex-wrap: wrap;
-}
-.gc-add-btn {
-  background: none; border: 1.5px dashed #93c5fd; border-radius: 6px;
-  color: var(--accent); cursor: pointer; font-family: var(--sans);
-  font-size: .78rem; font-weight: 600; padding: 6px 12px;
-  transition: all .15s;
-}
-.gc-add-btn:hover { background: rgba(37,99,235,.08); border-color: var(--accent); }
-.grade-calc-result {
-  font-size: .88rem; color: var(--text2); display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
-}
-.gc-nota {
-  font-size: 1.4rem; font-weight: 900; letter-spacing: -.5px; line-height: 1;
-}
-.gc-nota.aprobado { color: #16a34a; }
-.gc-nota.suspenso { color: #c00; }
-.gc-nota.parcial  { color: var(--accent); }
-.gc-pending-info { font-size: .75rem; color: var(--muted); }
-.gc-need-wrap {
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-  padding-top: 8px; border-top: 1px solid #bfdbfe;
-}
-.gc-need-label { font-size: .75rem; color: var(--text2); }
-.gc-need-input {
-  background: var(--page); border: 1px solid var(--border);
-  border-radius: 6px; color: var(--text); font-family: var(--mono);
-  font-size: .82rem; padding: 5px 8px; outline: none; width: 64px;
-  text-align: center; transition: border-color .15s;
-}
-.gc-need-input:focus { border-color: var(--accent); }
-.gc-need-result { font-size: .82rem; font-weight: 700; }
-
 /* ─── ZONA DE AUDIO ─── */
 .audio-box { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; background: var(--bg); }
 .audio-tab { padding: 16px 18px; }
@@ -1302,14 +1232,14 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
           <input id="nota-nota" type="number" min="0" max="10" step="0.1" placeholder="ej: 7.5" style="padding:10px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--sans);font-size:.93rem;outline:none;width:100%;">
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 80px 1fr;gap:12px;">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;">
         <div style="display:flex;flex-direction:column;gap:6px;">
           <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Examen</label>
           <input id="nota-exam" type="text" placeholder="ej: Parcial 1" style="padding:10px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--sans);font-size:.93rem;outline:none;width:100%;">
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:80px;">
           <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Cuenta %</label>
-          <input id="nota-peso" type="number" min="0" max="100" step="1" placeholder="ej: 40" style="padding:10px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--sans);font-size:.93rem;outline:none;width:100%;text-align:center;">
+          <input id="nota-peso" type="number" min="0" max="100" step="1" placeholder="40" style="padding:10px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--sans);font-size:.93rem;outline:none;width:100%;text-align:center;">
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Fecha</label>
@@ -1908,6 +1838,14 @@ function saveNota() {
   const comment = document.getElementById('nota-comment').value.trim();
   if (!asig || isNaN(nota)) { alert('Asignatura y nota son obligatorias.'); return; }
   const arr = loadExamNotas();
+  if (peso !== null) {
+    const pesoYa = arr.filter(n => n.asig === asig && n.peso !== null && n.peso !== undefined)
+                      .reduce((s, n) => s + n.peso, 0);
+    if (pesoYa + peso > 100) {
+      alert(`Este examen supera el 100% de la asignatura (llevas ${pesoYa}% asignado, solo quedan ${100 - pesoYa}%).`);
+      return;
+    }
+  }
   arr.push({ id: Date.now(), asig, nota, exam: exam || 'Examen', peso, fecha, comment });
   saveExamNotas(arr);
   closeNotaModal();
@@ -1999,14 +1937,22 @@ function renderNotas() {
   _gcSubjs = [];
 
   Object.entries(_groups).forEach(([asig, items]) => {
-    const gAvg   = _notaFinalAsig(asig, items);
-    const isPond = items.some(n => n.peso !== null && n.peso !== undefined);
+    const gAvg    = _notaFinalAsig(asig, items);
+    const conPeso = items.filter(n => n.peso !== null && n.peso !== undefined);
+    const totalPeso = conPeso.reduce((s, n) => s + n.peso, 0);
+    const isPond  = conPeso.length > 0;
+    const pesoRestante = 100 - totalPeso;
+    const pesoTag = isPond
+      ? (totalPeso === 100
+          ? `<span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#dcfce7;color:#16a34a;margin-left:6px;">100% ✓</span>`
+          : `<span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#fef3c7;color:#92400e;margin-left:6px;">${totalPeso}% · falta ${pesoRestante}%</span>`)
+      : '';
     html += `
       <div style="background:var(--page);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
         <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
           <div>
-            <div style="font-weight:700;font-size:.95rem;">${esc(asig)}</div>
-            <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">${items.length} examen${items.length>1?'es':''} · ${isPond ? 'nota ponderada' : 'media'} <strong style="color:${notaColor(gAvg)}">${gAvg.toFixed(1)}</strong></div>
+            <div style="font-weight:700;font-size:.95rem;display:flex;align-items:center;">${esc(asig)}${pesoTag}</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">${items.length} examen${items.length>1?'es':''} · ${isPond ? 'ponderada' : 'media'} <strong style="color:${notaColor(gAvg)}">${gAvg.toFixed(1)}</strong></div>
           </div>
           <div style="font-size:1.6rem;font-weight:900;color:${notaColor(gAvg)};">${gAvg.toFixed(1)}</div>
         </div>
@@ -2892,217 +2838,6 @@ function startFlashFromLibById(id) {
   if (note) startFlashFromLib(note.data);
 }
 
-// ── Calculadora de nota final por asignatura ──────────────────
-let _gcSubjs = [];
-function _gcRegister(subj) {
-  let idx = _gcSubjs.indexOf(subj);
-  if (idx === -1) { idx = _gcSubjs.length; _gcSubjs.push(subj); }
-  return idx;
-}
-function loadGradeCalc() {
-  try { return JSON.parse(localStorage.getItem('grade_calc') || '{}'); }
-  catch(_) { return {}; }
-}
-function saveGradeCalc(data) {
-  localStorage.setItem('grade_calc', JSON.stringify(data));
-}
-
-function toggleGradeCalc(idx) {
-  const el = document.getElementById('gcalc-' + idx);
-  if (!el) return;
-  const open = el.style.display === 'none' || el.style.display === '';
-  el.style.display = open ? 'flex' : 'none';
-  if (open) {
-    el.style.flexDirection = 'column';
-    renderGradeCalc(idx);
-  }
-}
-
-function renderGradeCalc(idx) {
-  const subj = _gcSubjs[idx];
-  const el   = document.getElementById('gcalc-' + idx);
-  if (!el || !subj) return;
-
-  const data = loadGradeCalc();
-  const rows = data[subj] || [];
-
-  // Calcular nota parcial y peso restante
-  let totalW = 0, filledW = 0, weightedSum = 0;
-  rows.forEach(r => {
-    const w = parseFloat(r.weight) || 0;
-    totalW += w;
-    if (r.grade !== '' && r.grade !== null && r.grade !== undefined && r.grade !== '-') {
-      filledW   += w;
-      weightedSum += w * (parseFloat(r.grade) || 0);
-    }
-  });
-  const pendingW   = totalW - filledW;
-  const notaFinal  = totalW > 0 && pendingW === 0 ? weightedSum / totalW : null;
-  const notaParcial = filledW > 0 ? weightedSum / filledW : null;
-
-  // Filas
-  let rowsHtml = rows.map((r, i) => `
-    <div class="grade-calc-row">
-      <input class="gc-input" type="text" placeholder="Ej. Examen final"
-             value="${esc(r.name || '')}"
-             oninput="updateGradeRow(${idx},${i},'name',this.value)">
-      <input class="gc-input gc-num" type="number" placeholder="%" min="0" max="100"
-             value="${r.weight ?? ''}"
-             oninput="updateGradeRow(${idx},${i},'weight',this.value)">
-      <input class="gc-input gc-num" type="number" placeholder="—" min="0" max="10" step="0.1"
-             value="${r.grade ?? ''}"
-             oninput="updateGradeRow(${idx},${i},'grade',this.value)">
-      <button class="gc-del" onclick="removeGradeRow(${idx},${i})">✕</button>
-    </div>`).join('');
-
-  // Resultado
-  let resHtml = '';
-  if (notaFinal !== null) {
-    const cls = notaFinal >= 5 ? 'aprobado' : 'suspenso';
-    const label = notaFinal >= 9 ? 'Matrícula' : notaFinal >= 7 ? 'Notable' : notaFinal >= 5 ? 'Aprobado' : 'Suspenso';
-    resHtml = `<span class="gc-nota ${cls}">${notaFinal.toFixed(2)}</span>
-               <span style="font-size:.8rem;color:var(--text2)">/ 10 — ${label}</span>`;
-  } else if (notaParcial !== null) {
-    resHtml = `<span class="gc-nota parcial">${notaParcial.toFixed(2)}</span>
-               <span style="font-size:.8rem;color:var(--text2)">/ 10</span>
-               <span class="gc-pending-info">(${pendingW.toFixed(0)}% pendiente)</span>`;
-  } else {
-    resHtml = `<span style="color:var(--muted);font-size:.85rem">Añade componentes para calcular</span>`;
-  }
-
-  // "¿Qué necesito?" — solo si hay peso pendiente
-  let needHtml = '';
-  if (pendingW > 0 && filledW > 0) {
-    needHtml = `<div class="gc-need-wrap">
-      <span class="gc-need-label">Para llegar a</span>
-      <input class="gc-need-input" type="number" min="0" max="10" step="0.1" placeholder="5"
-             oninput="calcNeeded(${idx},this.value)" id="gc-need-val-${idx}">
-      <span class="gc-need-label">necesitas</span>
-      <span class="gc-need-result" id="gc-need-res-${idx}">—</span>
-      <span class="gc-need-label">en el resto</span>
-    </div>`;
-  }
-
-  el.innerHTML = `
-    <div class="grade-calc-head">
-      <span>Componente</span><span style="text-align:center">Peso %</span>
-      <span style="text-align:center">Nota /10</span><span></span>
-    </div>
-    ${rowsHtml}
-    <div class="grade-calc-footer">
-      <button class="gc-add-btn" onclick="addGradeRow(${idx})">+ Añadir componente</button>
-      <div class="grade-calc-result">${resHtml}</div>
-    </div>
-    ${needHtml}`;
-}
-
-function calcNeeded(idx, targetStr) {
-  const target = parseFloat(targetStr);
-  const resEl  = document.getElementById('gc-need-res-' + idx);
-  if (!resEl) return;
-  if (isNaN(target) || target < 0 || target > 10) { resEl.textContent = '—'; resEl.style.color = ''; return; }
-
-  const subj = _gcSubjs[idx];
-  const data = loadGradeCalc();
-  const rows = data[subj] || [];
-  let totalW = 0, filledW = 0, weightedSum = 0;
-  rows.forEach(r => {
-    const w = parseFloat(r.weight) || 0;
-    totalW += w;
-    if (r.grade !== '' && r.grade !== null && r.grade !== undefined && r.grade !== '-') {
-      filledW += w; weightedSum += w * (parseFloat(r.grade) || 0);
-    }
-  });
-  const pendingW = totalW - filledW;
-  if (pendingW <= 0 || totalW <= 0) { resEl.textContent = '—'; return; }
-  const needed = (target * totalW - weightedSum) / pendingW;
-  if (needed > 10) {
-    resEl.textContent = 'imposible';
-    resEl.style.color = '#c00';
-  } else if (needed < 0) {
-    resEl.textContent = 'ya lo tienes ✓';
-    resEl.style.color = '#16a34a';
-  } else {
-    resEl.textContent = needed.toFixed(2) + ' / 10';
-    resEl.style.color = needed <= 5 ? '#16a34a' : needed <= 7 ? 'var(--accent)' : '#c00';
-  }
-}
-
-function addGradeRow(idx) {
-  const subj = _gcSubjs[idx];
-  const data = loadGradeCalc();
-  if (!data[subj]) data[subj] = [];
-  data[subj].push({ name: '', weight: '', grade: '' });
-  saveGradeCalc(data);
-  renderGradeCalc(idx);
-  // Focus on the new name input
-  const el = document.getElementById('gcalc-' + idx);
-  if (el) {
-    const inputs = el.querySelectorAll('.gc-input[type="text"]');
-    if (inputs.length) inputs[inputs.length - 1].focus();
-  }
-}
-
-function removeGradeRow(idx, rowIdx) {
-  const subj = _gcSubjs[idx];
-  const data = loadGradeCalc();
-  if (!data[subj]) return;
-  data[subj].splice(rowIdx, 1);
-  saveGradeCalc(data);
-  renderGradeCalc(idx);
-}
-
-function updateGradeRow(idx, rowIdx, field, value) {
-  const subj = _gcSubjs[idx];
-  const data = loadGradeCalc();
-  if (!data[subj] || !data[subj][rowIdx]) return;
-  data[subj][rowIdx][field] = value;
-  saveGradeCalc(data);
-  // Re-render only the result + needed section (not the whole calc, to avoid focus loss)
-  _gcUpdateResult(idx);
-}
-
-function _gcUpdateResult(idx) {
-  // Re-render just the footer result + needed (not rows, to keep focus)
-  const subj = _gcSubjs[idx];
-  if (!subj) return;
-  const data = loadGradeCalc();
-  const rows = data[subj] || [];
-
-  let totalW = 0, filledW = 0, weightedSum = 0;
-  rows.forEach(r => {
-    const w = parseFloat(r.weight) || 0;
-    totalW += w;
-    if (r.grade !== '' && r.grade !== null && r.grade !== undefined && r.grade !== '-') {
-      filledW += w; weightedSum += w * (parseFloat(r.grade) || 0);
-    }
-  });
-  const pendingW   = totalW - filledW;
-  const notaFinal  = totalW > 0 && pendingW === 0 ? weightedSum / totalW : null;
-  const notaParcial = filledW > 0 ? weightedSum / filledW : null;
-
-  const el = document.getElementById('gcalc-' + idx);
-  if (!el) return;
-  const resEl = el.querySelector('.grade-calc-result');
-  if (resEl) {
-    if (notaFinal !== null) {
-      const cls = notaFinal >= 5 ? 'aprobado' : 'suspenso';
-      const label = notaFinal >= 9 ? 'Matrícula' : notaFinal >= 7 ? 'Notable' : notaFinal >= 5 ? 'Aprobado' : 'Suspenso';
-      resEl.innerHTML = `<span class="gc-nota ${cls}">${notaFinal.toFixed(2)}</span>
-                         <span style="font-size:.8rem;color:var(--text2)">/ 10 — ${label}</span>`;
-    } else if (notaParcial !== null) {
-      resEl.innerHTML = `<span class="gc-nota parcial">${notaParcial.toFixed(2)}</span>
-                         <span style="font-size:.8rem;color:var(--text2)">/ 10</span>
-                         <span class="gc-pending-info">(${pendingW.toFixed(0)}% pendiente)</span>`;
-    } else {
-      resEl.innerHTML = `<span style="color:var(--muted);font-size:.85rem">Añade componentes para calcular</span>`;
-    }
-  }
-
-  // Update "needed" if visible
-  const needValEl = document.getElementById('gc-need-val-' + idx);
-  if (needValEl && needValEl.value) calcNeeded(idx, needValEl.value);
-}
 
 function _renderLibNotes(list) {
   const body = document.getElementById('lib-body');
