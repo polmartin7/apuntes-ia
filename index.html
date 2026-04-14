@@ -1302,10 +1302,14 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
           <input id="nota-nota" type="number" min="0" max="10" step="0.1" placeholder="ej: 7.5" style="padding:10px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--sans);font-size:.93rem;outline:none;width:100%;">
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="display:grid;grid-template-columns:1fr 80px 1fr;gap:12px;">
         <div style="display:flex;flex-direction:column;gap:6px;">
           <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Examen</label>
           <input id="nota-exam" type="text" placeholder="ej: Parcial 1" style="padding:10px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--sans);font-size:.93rem;outline:none;width:100%;">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Cuenta %</label>
+          <input id="nota-peso" type="number" min="0" max="100" step="1" placeholder="ej: 40" style="padding:10px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--sans);font-size:.93rem;outline:none;width:100%;text-align:center;">
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Fecha</label>
@@ -1891,18 +1895,20 @@ function openNotaModal() {
 
 function closeNotaModal() {
   document.getElementById('nota-modal').style.display = 'none';
-  ['nota-asig','nota-nota','nota-exam','nota-comment'].forEach(id => document.getElementById(id).value = '');
+  ['nota-asig','nota-nota','nota-exam','nota-peso','nota-comment'].forEach(id => document.getElementById(id).value = '');
 }
 
 function saveNota() {
-  const asig = document.getElementById('nota-asig').value.trim();
-  const nota = parseFloat(document.getElementById('nota-nota').value);
-  const exam = document.getElementById('nota-exam').value.trim();
-  const fecha = document.getElementById('nota-fecha').value;
+  const asig    = document.getElementById('nota-asig').value.trim();
+  const nota    = parseFloat(document.getElementById('nota-nota').value);
+  const exam    = document.getElementById('nota-exam').value.trim();
+  const pesoVal = document.getElementById('nota-peso').value;
+  const peso    = pesoVal !== '' ? parseFloat(pesoVal) : null;
+  const fecha   = document.getElementById('nota-fecha').value;
   const comment = document.getElementById('nota-comment').value.trim();
   if (!asig || isNaN(nota)) { alert('Asignatura y nota son obligatorias.'); return; }
   const arr = loadExamNotas();
-  arr.push({ id: Date.now(), asig, nota, exam: exam || 'Examen', fecha, comment });
+  arr.push({ id: Date.now(), asig, nota, exam: exam || 'Examen', peso, fecha, comment });
   saveExamNotas(arr);
   closeNotaModal();
   renderNotas();
@@ -1944,20 +1950,15 @@ function renderNotas() {
   const _groups = {};
   arr.forEach(n => { if (!_groups[n.asig]) _groups[n.asig] = []; _groups[n.asig].push(n); });
 
-  // Nota final por asignatura: usa la calculadora ponderada si está completa, si no la media simple
-  const gcData = loadGradeCalc();
+  // Nota final por asignatura: usa los pesos de cada examen si están definidos
   function _notaFinalAsig(asig, items) {
-    const rows = gcData[asig] || [];
-    if (rows.length > 0) {
-      let totalW = 0, filledW = 0, wSum = 0;
-      rows.forEach(r => {
-        const w = parseFloat(r.weight) || 0;
-        totalW += w;
-        if (r.grade !== '' && r.grade !== null && r.grade !== undefined) {
-          filledW += w; wSum += w * (parseFloat(r.grade) || 0);
-        }
-      });
-      if (totalW > 0 && Math.abs(filledW - totalW) < 0.01) return wSum / totalW;
+    const conPeso = items.filter(n => n.peso !== null && n.peso !== undefined);
+    if (conPeso.length > 0) {
+      const totalW = conPeso.reduce((s, n) => s + n.peso, 0);
+      if (totalW > 0) {
+        const wSum = conPeso.reduce((s, n) => s + n.nota * n.peso, 0);
+        return wSum / totalW;
+      }
     }
     return items.reduce((s, n) => s + n.nota, 0) / items.length;
   }
@@ -1968,7 +1969,7 @@ function renderNotas() {
   const best    = subjEntries.reduce((a, b) => a.nota >= b.nota ? a : b);
   const worst   = subjEntries.reduce((a, b) => a.nota <= b.nota ? a : b);
   const aprobadas = subjEntries.filter(e => e.nota >= 5).length;
-  const usingCalc = subjEntries.some(e => (gcData[e.asig] || []).length > 0);
+  const usingCalc = arr.some(n => n.peso !== null && n.peso !== undefined);
 
   let html = `
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;">
@@ -1998,23 +1999,17 @@ function renderNotas() {
   _gcSubjs = [];
 
   Object.entries(_groups).forEach(([asig, items]) => {
-    const rawAvg  = items.reduce((s, n) => s + n.nota, 0) / items.length;
-    const gAvg    = _notaFinalAsig(asig, items);
-    const gcIdx   = _gcRegister(asig);
-    const isPond  = (gcData[asig] || []).length > 0;
+    const gAvg   = _notaFinalAsig(asig, items);
+    const isPond = items.some(n => n.peso !== null && n.peso !== undefined);
     html += `
       <div style="background:var(--page);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
         <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
           <div>
             <div style="font-weight:700;font-size:.95rem;">${esc(asig)}</div>
-            <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">${items.length} examen${items.length>1?'es':''} · ${isPond ? 'ponderada' : 'media'} <strong style="color:${notaColor(gAvg)}">${gAvg.toFixed(1)}</strong></div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:2px;">${items.length} examen${items.length>1?'es':''} · ${isPond ? 'nota ponderada' : 'media'} <strong style="color:${notaColor(gAvg)}">${gAvg.toFixed(1)}</strong></div>
           </div>
-          <div style="display:flex;align-items:center;gap:12px;">
-            <button class="btn-sm" onclick="toggleGradeCalc(${gcIdx})" style="font-size:.75rem;padding:5px 10px;">📊 Nota final</button>
-            <div style="font-size:1.6rem;font-weight:900;color:${notaColor(gAvg)};">${gAvg.toFixed(1)}</div>
-          </div>
+          <div style="font-size:1.6rem;font-weight:900;color:${notaColor(gAvg)};">${gAvg.toFixed(1)}</div>
         </div>
-        <div id="gcalc-${gcIdx}" class="grade-calc" style="display:none;border-radius:0;border-left:none;border-right:none;border-top:none;margin-bottom:0;"></div>
         <div style="display:flex;flex-direction:column;gap:0;">
           ${items.sort((a,b) => new Date(b.fecha) - new Date(a.fecha)).map((n,i) => `
             <div style="padding:12px 16px;display:flex;align-items:center;gap:12px;${i>0?'border-top:1px solid var(--border);':''}">
@@ -2023,7 +2018,10 @@ function renderNotas() {
                 <div style="font-weight:600;font-size:.9rem;">${esc(n.exam)}</div>
                 <div style="font-size:.78rem;color:var(--muted);">${n.fecha ? new Date(n.fecha).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : ''}${n.comment ? ' · ' + esc(n.comment) : ''}</div>
               </div>
-              <div style="font-size:.75rem;font-weight:700;padding:3px 8px;border-radius:20px;background:${notaColor(n.nota)}18;color:${notaColor(n.nota)};">${notaLabel(n.nota)}</div>
+              <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                ${n.peso !== null && n.peso !== undefined ? `<div style="font-size:.72rem;font-weight:700;padding:3px 7px;border-radius:20px;background:var(--accent-bg);color:var(--accent);">${n.peso}%</div>` : ''}
+                <div style="font-size:.75rem;font-weight:700;padding:3px 8px;border-radius:20px;background:${notaColor(n.nota)}18;color:${notaColor(n.nota)};">${notaLabel(n.nota)}</div>
+              </div>
               <button onclick="deleteExamNota(${n.id})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:4px;border-radius:4px;flex-shrink:0;" title="Eliminar">🗑</button>
             </div>`).join('')}
         </div>
