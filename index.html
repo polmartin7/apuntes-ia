@@ -1021,46 +1021,81 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 /* ─── LOGIN ─── */
 #login-screen {
   position: fixed; inset: 0; z-index: 9999;
-  background: var(--bg);
+  background: #f8faff;
+  background-image: radial-gradient(#dde8ff 1px, transparent 1px);
+  background-size: 28px 28px;
   display: flex; align-items: center; justify-content: center;
   padding: 24px;
 }
 .login-box {
-  background: var(--page);
-  border-radius: 16px;
-  border: 1px solid var(--border2);
-  padding: 48px 40px;
-  width: 100%; max-width: 400px;
-  display: flex; flex-direction: column; gap: 24px;
-  box-shadow: 0 8px 40px rgba(0,0,0,.12);
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,.8);
+  padding: 48px 40px 40px;
+  width: 100%; max-width: 420px;
+  display: flex; flex-direction: column; gap: 0;
+  box-shadow: 0 12px 60px rgba(37,99,235,.10), 0 2px 12px rgba(0,0,0,.06);
   text-align: center;
 }
-.login-logo { font-size: 2.4rem; }
-.login-title { font-size: 1.3rem; font-weight: 800; letter-spacing: -.5px; color: var(--text); }
-.login-sub { font-size: .88rem; color: var(--muted); line-height: 1.5; }
+.login-logo-mark {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 4px 20px rgba(37,99,235,.35);
+  font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: -1px;
+  font-family: var(--sans);
+}
+.login-title {
+  font-size: 1.7rem; font-weight: 900; letter-spacing: -.6px;
+  color: #0f172a; line-height: 1.1; margin-bottom: 8px;
+}
+.login-tagline {
+  font-size: .92rem; color: #64748b; line-height: 1.55; margin-bottom: 24px;
+}
+.login-features {
+  display: flex; justify-content: center; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 28px;
+}
+.login-feature-pill {
+  font-size: .73rem; font-weight: 600; color: #2563eb;
+  background: #eff6ff; border: 1px solid #bfdbfe;
+  padding: 4px 11px; border-radius: 100px; letter-spacing: .01em;
+}
+.login-divider {
+  height: 1px; background: #e8edf4; margin-bottom: 24px;
+}
 .login-input {
   width: 100%; padding: 14px 16px;
-  border: 1.5px solid var(--border2); border-radius: 10px;
-  background: var(--bg); color: var(--text);
-  font-family: var(--mono); font-size: 1rem; font-weight: 700;
-  text-align: center; letter-spacing: .1em; text-transform: uppercase;
-  outline: none; box-sizing: border-box;
-  transition: border-color .15s;
+  border: 1.5px solid #e2e8f0; border-radius: 12px;
+  background: #f8faff; color: var(--text);
+  font-family: var(--mono); font-size: 1.05rem; font-weight: 700;
+  text-align: center; letter-spacing: .12em; text-transform: uppercase;
+  outline: none; box-sizing: border-box; margin-bottom: 10px;
+  transition: border-color .15s, box-shadow .15s;
 }
-.login-input:focus { border-color: var(--accent); }
+.login-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
 .login-input.error { border-color: #c0392b; animation: shake .3s; }
 @keyframes shake {
   0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
 }
 .login-btn {
   width: 100%; padding: 14px;
-  background: var(--accent); color: #fff;
-  border: none; border-radius: 10px;
-  font-family: var(--sans); font-size: 1rem; font-weight: 700;
-  cursor: pointer; transition: opacity .15s;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff; border: none; border-radius: 12px;
+  font-family: var(--sans); font-size: .97rem; font-weight: 700;
+  cursor: pointer; transition: opacity .15s, transform .1s;
+  box-shadow: 0 4px 14px rgba(37,99,235,.3);
+  letter-spacing: .01em;
 }
-.login-btn:hover { opacity: .88; }
-.login-error { font-size: .83rem; color: #c0392b; min-height: 18px; }
+.login-btn:hover { opacity: .92; transform: translateY(-1px); }
+.login-btn:active { transform: translateY(0); }
+.login-error { font-size: .82rem; color: #dc2626; min-height: 18px; margin: 6px 0 2px; }
 </style>
 </head>
 <body>
@@ -1068,18 +1103,21 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 <!-- ════ LOGIN ════ -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">📄</div>
-    <div>
-      <div class="login-title">Voxnote</div>
-      <div class="login-sub" style="margin-top:8px">Introduce tu código de acceso personal</div>
+    <div class="login-logo-mark">V</div>
+    <div class="login-title">Voxnote</div>
+    <div class="login-tagline">Graba, escribe o sube una foto.<br>La IA genera tus apuntes en segundos.</div>
+    <div class="login-features">
+      <span class="login-feature-pill">📝 Resumen</span>
+      <span class="login-feature-pill">🌳 Esquema</span>
+      <span class="login-feature-pill">🃏 Flashcards</span>
+      <span class="login-feature-pill">📝 Examen</span>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <input class="login-input" id="login-code" type="text" placeholder="XXXX-XX" maxlength="12"
-        oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')checkCode()">
-      <div class="login-error" id="login-error"></div>
-      <button class="login-btn" onclick="checkCode()">Entrar →</button>
-    </div>
-    <div style="font-size:.75rem;color:var(--muted)">¿No tienes código? Contacta con nosotros.</div>
+    <div class="login-divider"></div>
+    <input class="login-input" id="login-code" type="text" placeholder="Tu código de acceso" maxlength="12"
+      oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')checkCode()">
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" onclick="checkCode()">Acceder →</button>
+    <div style="font-size:.75rem;color:#94a3b8;margin-top:16px;">¿Sin código? Contacta con tu profesor.</div>
   </div>
 </div>
 
