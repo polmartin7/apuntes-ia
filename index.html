@@ -1998,85 +1998,70 @@ function renderEsquema(data, tipo) {
     { bg:'#fef2f2', border:'#ef4444', text:'#b91c1c', glow:'#ef444420' },
   ];
 
-  // ── SVG Tree builder ──────────────────────────────────────────
+  // ── Árbol vertical con texto libre ────────────────────────────
   function buildSVGTree(rootLabel, branches) {
-    const RH=52, BW=158, BH=42, LW=138, LH=36;
-    const GAP_L=10, GAP_B=20, PAD=32;
-    const Y0=20, Y1=Y0+RH+88, Y2=Y1+BH+72;
+    let h = `<div style="font-family:var(--sans);max-width:540px;margin:0 auto;padding:4px 0 8px;">`;
 
-    // Ancho de cada grupo de rama
-    const groups = branches.map((b,i) => {
-      const n = Math.max(1, b.children.length);
-      return { ...b, gW: Math.max(BW, n*LW+(n-1)*GAP_L), p: PALETTES[i%PALETTES.length] };
-    });
-    const totalW = Math.max(280, groups.reduce((s,g)=>s+g.gW,0)+(groups.length-1)*GAP_B+PAD*2);
-
-    // Centros horizontales de cada rama
-    let cx = PAD;
-    groups.forEach(g => { g.cx = cx+g.gW/2; cx += g.gW+GAP_B; });
-    const rootCX = totalW/2;
-    const RW = Math.min(Math.max(rootLabel.length*10+48, 160), totalW-PAD*2);
-
-    const hasLeaves = groups.some(g=>g.children.length>0);
-    const svgH = hasLeaves ? Y2+LH+PAD : Y1+BH+PAD;
-
-    // ── SVG paths ──
-    let paths = `<defs>
-      <filter id="sf"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity=".12"/></filter>
-    </defs>`;
-
-    groups.forEach(g => {
-      // raíz → rama (bezier)
-      const midY = (Y0+RH+Y1)/2;
-      paths += `<path d="M${rootCX},${Y0+RH} C${rootCX},${midY} ${g.cx},${midY} ${g.cx},${Y1}"
-        fill="none" stroke="${g.p.border}" stroke-width="2.5" stroke-opacity=".45" stroke-linecap="round"/>`;
-      // rama → hojas
-      const n = g.children.length;
-      const lsX = g.cx - (n*LW+(n-1)*GAP_L)/2;
-      g.children.forEach((_,li) => {
-        const lcx = lsX+li*(LW+GAP_L)+LW/2;
-        const midY2 = (Y1+BH+Y2)/2;
-        paths += `<path d="M${g.cx},${Y1+BH} C${g.cx},${midY2} ${lcx},${midY2} ${lcx},${Y2}"
-          fill="none" stroke="${g.p.border}" stroke-width="1.5" stroke-opacity=".3" stroke-linecap="round"/>`;
-      });
-    });
-
-    // ── Nodos HTML absolutamente posicionados ──
-    function nd(x,y,w,h,txt,st) {
-      return `<div style="position:absolute;left:${Math.round(x)}px;top:${y}px;width:${w}px;
-        display:flex;align-items:center;justify-content:center;text-align:center;
-        min-height:${h}px;padding:6px 12px;box-sizing:border-box;word-break:break-word;${st}">${txt}</div>`;
-    }
-
-    let divs = nd(
-      rootCX-RW/2, Y0, RW, RH, esc(trunc(rootLabel,32)),
-      'background:linear-gradient(135deg,#111827,#1f2937);color:#fff;font-weight:800;font-size:.95rem;'+
-      `border-radius:${RH/2}px;box-shadow:0 6px 28px rgba(0,0,0,.28);letter-spacing:-.2px;`
-    );
-
-    groups.forEach(g => {
-      divs += nd(
-        g.cx-BW/2, Y1, BW, BH, esc(trunc(g.label,24)),
-        `background:${g.p.bg};border:2px solid ${g.p.border};color:${g.p.text};font-weight:700;font-size:.85rem;`+
-        `border-radius:${BH/2}px;box-shadow:0 3px 14px ${g.p.glow};`
-      );
-      const n = g.children.length;
-      const lsX = g.cx-(n*LW+(n-1)*GAP_L)/2;
-      g.children.forEach((child,li) => {
-        divs += nd(
-          lsX+li*(LW+GAP_L), Y2, LW, LH, esc(trunc(child,20)),
-          `background:#fff;border:1.5px solid #e5e7eb;color:#374151;font-size:.78rem;font-weight:500;`+
-          `border-radius:${LH/2}px;box-shadow:0 2px 8px rgba(0,0,0,.07);`
-        );
-      });
-    });
-
-    return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px;width:100%;">
-      <div style="position:relative;min-width:${totalW}px;width:max-content;height:${svgH}px;margin:0 auto;">
-        <svg style="position:absolute;top:0;left:0;" width="${totalW}" height="${svgH}" overflow="visible">${paths}</svg>
-        ${divs}
-      </div>
+    // Raíz centrada
+    h += `<div style="display:flex;justify-content:center;margin-bottom:0;">
+      <div style="background:linear-gradient(135deg,#111827,#374151);color:#fff;
+        font-weight:800;font-size:1rem;padding:13px 26px;border-radius:16px;
+        box-shadow:0 4px 22px rgba(0,0,0,.25);word-break:break-word;
+        text-align:center;line-height:1.35;letter-spacing:-.2px;">${esc(rootLabel)}</div>
     </div>`;
+
+    // Línea desde raíz hacia abajo
+    h += `<div style="display:flex;justify-content:center;">
+      <div style="width:2px;height:22px;background:#d1d5db;"></div>
+    </div>`;
+
+    branches.forEach((branch, bi) => {
+      const p = PALETTES[bi % PALETTES.length];
+      const isLastBranch = bi === branches.length - 1;
+
+      h += `<div style="display:flex;align-items:stretch;gap:0;">
+        <!-- columna conectora izquierda -->
+        <div style="width:22px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;">
+          <div style="width:2px;height:20px;background:#d1d5db;"></div>
+          <div style="width:2px;background:${isLastBranch?'transparent':'#d1d5db'};flex:1;min-height:0;"></div>
+        </div>
+        <!-- contenido rama -->
+        <div style="flex:1;min-width:0;padding-bottom:${isLastBranch?'0':'10px'};">
+          <div style="display:flex;align-items:flex-start;gap:0;">
+            <div style="width:18px;height:2px;background:#d1d5db;flex-shrink:0;margin-top:19px;"></div>
+            <div style="flex:1;min-width:0;">
+              <!-- nodo rama -->
+              <div style="background:${p.bg};border:2px solid ${p.border};color:${p.text};
+                font-weight:700;font-size:.9rem;padding:10px 15px;border-radius:13px;
+                word-break:break-word;line-height:1.4;
+                box-shadow:0 2px 12px ${p.glow};margin-bottom:${branch.children.length?'0':'0'};">${esc(branch.label)}</div>
+              <!-- hojas -->
+              ${branch.children.map((child, ci) => {
+                const isLastLeaf = ci === branch.children.length - 1;
+                return `<div style="display:flex;align-items:stretch;gap:0;">
+                  <div style="width:20px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;">
+                    <div style="width:2px;height:14px;background:${p.border};opacity:.35;"></div>
+                    <div style="width:2px;background:${isLastLeaf?'transparent':p.border};opacity:.35;flex:1;min-height:0;"></div>
+                  </div>
+                  <div style="flex:1;min-width:0;padding-bottom:${isLastLeaf?'0':'5px'};">
+                    <div style="display:flex;align-items:flex-start;gap:0;">
+                      <div style="width:14px;height:2px;background:${p.border};opacity:.35;flex-shrink:0;margin-top:16px;"></div>
+                      <div style="flex:1;min-width:0;background:#fff;border:1.5px solid #e8eaed;color:#374151;
+                        font-size:.83rem;font-weight:500;padding:8px 12px;border-radius:10px;
+                        word-break:break-word;line-height:1.45;
+                        box-shadow:0 1px 6px rgba(0,0,0,.07);">${esc(child)}</div>
+                    </div>
+                  </div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+
+    h += `</div>`;
+    return h;
   }
 
   let html = '';
