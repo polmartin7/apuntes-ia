@@ -2734,6 +2734,29 @@ function loadNotes() {
 function saveNotesList(list) {
   localStorage.setItem('apuntes_lib', JSON.stringify(list));
 }
+
+// ── Cloud sync de apuntes (jsonblob por código de usuario) ────
+async function _cloudSyncNotes(code, list) {
+  try {
+    const r = await fetch(BLOB_URL + '?t=' + Date.now());
+    const data = await r.json();
+    if (!data.notes) data.notes = {};
+    data.notes[code] = list.slice(0, 30); // máx 30 apuntes guardados
+    await fetch(BLOB_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch(_) {}
+}
+async function _cloudLoadNotes(code) {
+  try {
+    const r = await fetch(BLOB_URL + '?t=' + Date.now());
+    const data = await r.json();
+    return (data.notes && data.notes[code]) || null;
+  } catch(_) { return null; }
+}
+
 function saveNote(notes) {
   const list = loadNotes();
   const entry = {
@@ -2747,10 +2770,15 @@ function saveNote(notes) {
   };
   list.unshift(entry);
   saveNotesList(list);
+  const _c = localStorage.getItem('access_code');
+  if (_c) _cloudSyncNotes(_c, list); // fire-and-forget
 }
 function deleteNote(id) {
   if (!confirm('¿Borrar estos apuntes?')) return;
-  saveNotesList(loadNotes().filter(n => n.id !== id));
+  const list = loadNotes().filter(n => n.id !== id);
+  saveNotesList(list);
+  const _c = localStorage.getItem('access_code');
+  if (_c) _cloudSyncNotes(_c, list);
   openLib();
 }
 function openNote(id) {
@@ -2766,16 +2794,13 @@ function startFlashFromLibById(id) {
   if (note) startFlashFromLib(note.data);
 }
 
-function openLib() {
-  libNotes = loadNotes();
-  const list = libNotes;
+function _renderLibNotes(list) {
   const body = document.getElementById('lib-body');
   const tLib = I18N[uiLang] || I18N.es;
   if (!list.length) {
     body.innerHTML = `<div class="lib-empty"><strong>${tLib.libEmpty}</strong>${tLib.libEmptySub}</div>`;
-    show('lib'); return;
+    return;
   }
-  // Agrupar por asignatura
   const groups = {};
   list.forEach(n => {
     if (!groups[n.subject]) groups[n.subject] = [];
@@ -2805,7 +2830,33 @@ function openLib() {
     </div>`;
   });
   body.innerHTML = h;
+}
+
+async function openLib() {
+  // 1. Mostrar apuntes locales inmediatamente
+  libNotes = loadNotes();
+  _renderLibNotes(libNotes);
   show('lib');
+
+  // 2. Sincronizar desde la nube en segundo plano
+  const code = localStorage.getItem('access_code');
+  if (!code) return;
+  const cloudNotes = await _cloudLoadNotes(code);
+  if (!cloudNotes || !cloudNotes.length) return;
+
+  // Merge: cloud tiene prioridad; añadir notas locales que no estén en cloud
+  const cloudIds = new Set(cloudNotes.map(n => n.id));
+  const localOnly = loadNotes().filter(n => !cloudIds.has(n.id));
+  const merged = [...cloudNotes, ...localOnly].sort((a, b) => b.id - a.id);
+
+  // Solo re-renderizar si hay diferencias
+  const prevIds = libNotes.map(n => n.id).join(',');
+  const newIds  = merged.map(n => n.id).join(',');
+  if (prevIds !== newIds) {
+    saveNotesList(merged);
+    libNotes = merged;
+    _renderLibNotes(merged);
+  }
 }
 
 function esc(s) {
