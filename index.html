@@ -913,6 +913,8 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 .photo-pick-zone:hover { background:var(--accent-bg); }
 .photo-pick-zone.drag { background:var(--accent-bg); }
 
+@media (max-width: 480px) { .hide-xs { display: none; } }
+
 /* ─── BIBLIOTECA ─── */
 #lib { display:none; flex-direction:column; min-height:100vh; }
 .lib-bar {
@@ -1152,9 +1154,9 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
   <div class="lib-bar">
     <div class="lib-bar-title" id="lib-bar-main-title">📚 Mis Apuntes</div>
     <div class="topbar-acts">
-      <button class="btn-sm" onclick="toggleDark()" id="btn-dark">🌙</button>
-      <button class="btn-sm" onclick="openCal()">📅 Calendario</button>
-      <button class="btn-sm" onclick="openNotas()" data-i18n="my-notas">🎓 Mis notas</button>
+      <button class="btn-sm" onclick="toggleDark()" id="btn-dark" title="Modo oscuro">🌙</button>
+      <button class="btn-sm" onclick="openCal()" title="Calendario"><span class="hide-xs">📅 </span>Calendario</button>
+      <button class="btn-sm" onclick="openNotas()" data-i18n="my-notas" title="Mis notas"><span class="hide-xs">🎓 </span><span data-i18n-txt="my-notas-short">Notas</span></button>
       <button class="btn-sm primary" onclick="show('inp')" data-i18n="btn-new">+ Nuevo</button>
     </div>
   </div>
@@ -1220,7 +1222,8 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 <!-- Modal añadir nota -->
 <div id="nota-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
   <div style="background:var(--page);border-radius:12px;width:100%;max-width:480px;padding:28px;display:flex;flex-direction:column;gap:18px;box-shadow:0 8px 40px rgba(0,0,0,.2);">
-    <div style="font-size:1.1rem;font-weight:700;letter-spacing:-.3px;">Nueva nota de examen</div>
+    <div style="font-size:1.1rem;font-weight:700;letter-spacing:-.3px;" id="nota-modal-title">Nueva nota de examen</div>
+    <input type="hidden" id="nota-edit-id" value="">
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div style="display:flex;flex-direction:column;gap:6px;">
@@ -1818,14 +1821,30 @@ function openNotas() {
   renderNotas();
 }
 
-function openNotaModal() {
-  document.getElementById('nota-fecha').value = new Date().toISOString().slice(0,10);
+function openNotaModal(editId) {
+  document.getElementById('nota-modal-title').textContent = editId ? 'Editar nota de examen' : 'Nueva nota de examen';
+  document.getElementById('nota-edit-id').value = editId || '';
+  if (!editId) {
+    document.getElementById('nota-fecha').value = new Date().toISOString().slice(0,10);
+  }
   document.getElementById('nota-modal').style.display = 'flex';
+}
+
+function openNotaModalEdit(id) {
+  const entry = loadExamNotas().find(n => n.id === id);
+  if (!entry) return;
+  document.getElementById('nota-asig').value    = entry.asig || '';
+  document.getElementById('nota-nota').value    = entry.nota ?? '';
+  document.getElementById('nota-exam').value    = entry.exam || '';
+  document.getElementById('nota-peso').value    = entry.peso ?? '';
+  document.getElementById('nota-fecha').value   = entry.fecha || '';
+  document.getElementById('nota-comment').value = entry.comment || '';
+  openNotaModal(id);
 }
 
 function closeNotaModal() {
   document.getElementById('nota-modal').style.display = 'none';
-  ['nota-asig','nota-nota','nota-exam','nota-peso','nota-comment'].forEach(id => document.getElementById(id).value = '');
+  ['nota-asig','nota-nota','nota-exam','nota-peso','nota-comment','nota-edit-id'].forEach(id => document.getElementById(id).value = '');
 }
 
 function saveNota() {
@@ -1836,17 +1855,22 @@ function saveNota() {
   const peso    = pesoVal !== '' ? parseFloat(pesoVal) : null;
   const fecha   = document.getElementById('nota-fecha').value;
   const comment = document.getElementById('nota-comment').value.trim();
+  const editId  = parseInt(document.getElementById('nota-edit-id').value) || null;
   if (!asig || isNaN(nota)) { alert('Asignatura y nota son obligatorias.'); return; }
-  const arr = loadExamNotas();
+  let arr = loadExamNotas();
   if (peso !== null) {
-    const pesoYa = arr.filter(n => n.asig === asig && n.peso !== null && n.peso !== undefined)
+    const pesoYa = arr.filter(n => n.asig === asig && n.peso !== null && n.peso !== undefined && n.id !== editId)
                       .reduce((s, n) => s + n.peso, 0);
     if (pesoYa + peso > 100) {
-      alert(`Este examen supera el 100% de la asignatura (llevas ${pesoYa}% asignado, solo quedan ${100 - pesoYa}%).`);
+      alert(`Este examen supera el 100% (llevas ${pesoYa}%, quedan ${100 - pesoYa}%).`);
       return;
     }
   }
-  arr.push({ id: Date.now(), asig, nota, exam: exam || 'Examen', peso, fecha, comment });
+  if (editId) {
+    arr = arr.map(n => n.id === editId ? { ...n, asig, nota, exam: exam || 'Examen', peso, fecha, comment } : n);
+  } else {
+    arr.push({ id: Date.now(), asig, nota, exam: exam || 'Examen', peso, fecha, comment });
+  }
   saveExamNotas(arr);
   closeNotaModal();
   renderNotas();
@@ -1944,8 +1968,8 @@ function renderNotas() {
     const pesoRestante = 100 - totalPeso;
     const pesoTag = isPond
       ? (totalPeso === 100
-          ? `<span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#dcfce7;color:#16a34a;margin-left:6px;">100% ✓</span>`
-          : `<span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#fef3c7;color:#92400e;margin-left:6px;">${totalPeso}% · falta ${pesoRestante}%</span>`)
+          ? `<span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#16a34a22;color:#16a34a;margin-left:6px;">100% ✓</span>`
+          : `<span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#d9770622;color:#d97706;margin-left:6px;">${totalPeso}% · falta ${pesoRestante}%</span>`)
       : '';
     html += `
       <div style="background:var(--page);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
@@ -1968,9 +1992,25 @@ function renderNotas() {
                 ${n.peso !== null && n.peso !== undefined ? `<div style="font-size:.72rem;font-weight:700;padding:3px 7px;border-radius:20px;background:var(--accent-bg);color:var(--accent);">${n.peso}%</div>` : ''}
                 <div style="font-size:.75rem;font-weight:700;padding:3px 8px;border-radius:20px;background:${notaColor(n.nota)}18;color:${notaColor(n.nota)};">${notaLabel(n.nota)}</div>
               </div>
-              <button onclick="deleteExamNota(${n.id})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:4px;border-radius:4px;flex-shrink:0;" title="Eliminar">🗑</button>
+              <div style="display:flex;gap:2px;flex-shrink:0;">
+                <button onclick="openNotaModalEdit(${n.id})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:4px 6px;border-radius:4px;transition:background .15s;" title="Editar" onmouseover="this.style.background='var(--accent-bg)'" onmouseout="this.style.background='none'">✏️</button>
+                <button onclick="deleteExamNota(${n.id})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:4px 6px;border-radius:4px;transition:background .15s;" title="Eliminar" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background='none'">🗑</button>
+              </div>
             </div>`).join('')}
         </div>
+        ${(isPond && pesoRestante > 0) ? (() => {
+          const wSum = conPeso.reduce((s, n) => s + n.nota * n.peso, 0);
+          const targets = [{label:'Aprobar',t:5,c:'#16a34a'},{label:'Notable',t:7,c:'#2563eb'},{label:'Sobresaliente',t:9,c:'#7c3aed'}];
+          const pills = targets.map(({label,t,c}) => {
+            const needed = (t * 100 - wSum) / pesoRestante;
+            if (needed < 0) return `<span style="font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:20px;background:${c}18;color:${c};">✓ ${label}</span>`;
+            if (needed > 10) return `<span style="font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--border);color:var(--muted);">${label} imposible</span>`;
+            return `<span style="font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:20px;background:${c}18;color:${c};">≥${needed.toFixed(1)} → ${label}</span>`;
+          }).join('');
+          return `<div style="padding:10px 16px;border-top:1px solid var(--border);background:var(--bg);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:.72rem;color:var(--muted);font-weight:600;">Necesitas en el ${pesoRestante}% restante:</span>${pills}
+          </div>`;
+        })() : ''}
       </div>`;
   });
 
@@ -2825,6 +2865,19 @@ function deleteNote(id) {
   if (_c) _cloudSyncNotes(_c, list);
   openLib();
 }
+function renameNote(id) {
+  const list  = loadNotes();
+  const entry = list.find(n => n.id === id);
+  if (!entry) return;
+  const newTitle = prompt('Nuevo título:', entry.title);
+  if (!newTitle || !newTitle.trim() || newTitle.trim() === entry.title) return;
+  entry.title = newTitle.trim();
+  if (entry.data) entry.data.title = entry.title;
+  saveNotesList(list);
+  const _c = localStorage.getItem('access_code');
+  if (_c) _cloudSyncNotes(_c, list);
+  openLib();
+}
 function openNote(id) {
   const entry = loadNotes().find(n => n.id === id);
   if (!entry) return;
@@ -2867,6 +2920,7 @@ function _renderLibNotes(list) {
             <span class="note-card-level">${esc(n.level)}</span>
             <div style="display:flex;gap:6px;">
               <button class="note-card-del" onclick="event.stopPropagation();startFlashFromLibById(${n.id})" title="Flashcards">🃏</button>
+              <button class="note-card-del" onclick="event.stopPropagation();renameNote(${n.id})" title="Renombrar">✏️</button>
               <button class="note-card-del" onclick="event.stopPropagation();deleteNote(${n.id})">🗑</button>
             </div>
           </div>
@@ -3720,6 +3774,21 @@ async function extractPhotoText() {
 // Init
 const sk = localStorage.getItem('gk');
 if (sk) document.getElementById('apikey').value = sk;
+// Restaurar última asignatura y nivel
+(function() {
+  const lastSubj  = localStorage.getItem('last_subj');
+  const lastLevel = localStorage.getItem('last_level');
+  const subjEl    = document.getElementById('subj');
+  const levelEl   = document.getElementById('level');
+  if (lastSubj && subjEl) {
+    for (const opt of subjEl.options) { if (opt.value === lastSubj) { opt.selected = true; break; } }
+  }
+  if (lastLevel && levelEl) {
+    for (const opt of levelEl.options) { if (opt.value === lastLevel) { opt.selected = true; break; } }
+  }
+  subjEl && subjEl.addEventListener('change', () => localStorage.setItem('last_subj', subjEl.value));
+  levelEl && levelEl.addEventListener('change', () => localStorage.setItem('last_level', levelEl.value));
+})();
 // Abrir biblioteca si hay apuntes, si no la pantalla de entrada
 if (loadNotes().length > 0) { openLib(); } else { show('inp'); }
 </script>
