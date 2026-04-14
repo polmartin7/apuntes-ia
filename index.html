@@ -1610,29 +1610,34 @@ async function trackActivity(code, type) {
   } catch(_) {}
 }
 
-// Comprobar acceso al cargar
+// Comprobar acceso al cargar — la pantalla de login permanece visible hasta verificar
 (function() {
-  if (!ACCESS_REQUIRED) {
-    document.getElementById('login-screen').style.display = 'none';
-    return;
-  }
+  const loginScreen = document.getElementById('login-screen');
+  const loginError  = document.getElementById('login-error');
+
+  if (!ACCESS_REQUIRED) { loginScreen.style.display = 'none'; return; }
+
   const saved = localStorage.getItem('access_code');
-  if (!saved || !ACCESS_CODES.includes(saved)) return;
-  // Comprobar si el código está bloqueado
+  // Sin código guardado o código inválido → mostrar login
+  if (!saved || !ACCESS_CODES.includes(saved)) { loginScreen.style.display = 'flex'; return; }
+
+  // Hay código guardado: verificar si está bloqueado antes de abrir la app
+  loginScreen.style.display = 'flex'; // mantener visible mientras se verifica
   fetch(BLOB_URL + '?t=' + Date.now())
     .then(r => r.json())
     .then(data => {
       if ((data.blocked || []).includes(saved)) {
         localStorage.removeItem('access_code');
-        document.getElementById('login-error').textContent = 'Tu acceso ha sido desactivado.';
+        loginError.textContent = 'Tu acceso ha sido desactivado.';
+        loginScreen.style.display = 'flex';
       } else {
-        document.getElementById('login-screen').style.display = 'none';
+        loginScreen.style.display = 'none';
         trackActivity(saved, 'login');
       }
     })
     .catch(() => {
-      // Sin red: mostrar pantalla de código igualmente
-      document.getElementById('login-error').textContent = 'Sin conexión. Inténtalo de nuevo.';
+      loginError.textContent = 'Sin conexión. Inténtalo de nuevo.';
+      loginScreen.style.display = 'flex';
     });
 })();
 
