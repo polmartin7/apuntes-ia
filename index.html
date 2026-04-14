@@ -1985,142 +1985,135 @@ NOTES:\n${context}`;
   return repairJSON(raw, 'array');
 }
 
+function trunc(s, n) { s = String(s||''); return s.length > n ? s.slice(0,n-1)+'…' : s; }
+
 function renderEsquema(data, tipo) {
   const subject = (currentNotes && currentNotes.subject) ? currentNotes.subject : 'Esquema';
 
-  // ── Paleta de colores por rama (cíclica) ──
   const PALETTES = [
-    { bg:'#eff6ff', border:'#3b82f6', text:'#1d4ed8' },
-    { bg:'#f0fdf4', border:'#22c55e', text:'#15803d' },
-    { bg:'#fdf4ff', border:'#a855f7', text:'#7e22ce' },
-    { bg:'#fff7ed', border:'#f97316', text:'#c2410c' },
-    { bg:'#fef2f2', border:'#ef4444', text:'#b91c1c' },
+    { bg:'#eff6ff', border:'#3b82f6', text:'#1d4ed8', glow:'#3b82f620' },
+    { bg:'#f0fdf4', border:'#22c55e', text:'#15803d', glow:'#22c55e20' },
+    { bg:'#fdf4ff', border:'#a855f7', text:'#7e22ce', glow:'#a855f720' },
+    { bg:'#fff7ed', border:'#f97316', text:'#c2410c', glow:'#f9731620' },
+    { bg:'#fef2f2', border:'#ef4444', text:'#b91c1c', glow:'#ef444420' },
   ];
 
-  // ── Nodo raíz ──
-  function rootNode(label) {
-    return `<div style="display:inline-flex;align-items:center;gap:8px;background:var(--text);color:var(--bg);
-      padding:10px 20px;border-radius:100px;font-weight:800;font-size:1rem;letter-spacing:-.2px;
-      box-shadow:0 4px 16px rgba(0,0,0,.15);margin-bottom:4px;">${esc(label)}</div>`;
-  }
+  // ── SVG Tree builder ──────────────────────────────────────────
+  function buildSVGTree(rootLabel, branches) {
+    const RH=52, BW=158, BH=42, LW=138, LH=36;
+    const GAP_L=10, GAP_B=20, PAD=32;
+    const Y0=20, Y1=Y0+RH+88, Y2=Y1+BH+72;
 
-  // ── Nodo rama (nivel 1) ──
-  function branchNode(label, p) {
-    return `<div style="display:inline-flex;align-items:center;background:${p.bg};
-      border:1.5px solid ${p.border};color:${p.text};
-      padding:7px 16px;border-radius:100px;font-weight:700;font-size:.9rem;">${esc(label)}</div>`;
-  }
+    // Ancho de cada grupo de rama
+    const groups = branches.map((b,i) => {
+      const n = Math.max(1, b.children.length);
+      return { ...b, gW: Math.max(BW, n*LW+(n-1)*GAP_L), p: PALETTES[i%PALETTES.length] };
+    });
+    const totalW = Math.max(280, groups.reduce((s,g)=>s+g.gW,0)+(groups.length-1)*GAP_B+PAD*2);
 
-  // ── Nodo hoja (nivel 2) ──
-  function leafNode(label, p) {
-    return `<div style="display:inline-flex;align-items:center;background:#fff;
-      border:1px solid #e5e7eb;color:#374151;
-      padding:5px 13px;border-radius:100px;font-size:.82rem;font-weight:500;">${esc(label)}</div>`;
-  }
+    // Centros horizontales de cada rama
+    let cx = PAD;
+    groups.forEach(g => { g.cx = cx+g.gW/2; cx += g.gW+GAP_B; });
+    const rootCX = totalW/2;
+    const RW = Math.min(Math.max(rootLabel.length*10+48, 160), totalW-PAD*2);
 
-  // ── Construye árbol: raíz → ramas → hojas ──
-  function buildTree(rootLabel, branches) {
-    // branches: [{label, children:[string]}]
-    let h = `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:0;font-family:var(--sans);">`;
+    const hasLeaves = groups.some(g=>g.children.length>0);
+    const svgH = hasLeaves ? Y2+LH+PAD : Y1+BH+PAD;
 
-    // Raíz
-    h += `<div style="padding-left:16px;">${rootNode(rootLabel)}</div>`;
+    // ── SVG paths ──
+    let paths = `<defs>
+      <filter id="sf"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity=".12"/></filter>
+    </defs>`;
 
-    // Línea vertical desde raíz
-    branches.forEach((branch, bi) => {
-      const isLastBranch = bi === branches.length - 1;
-      const p = PALETTES[bi % PALETTES.length];
-      const children = branch.children || [];
-
-      // Conector raíz → rama
-      h += `<div style="display:flex;align-items:stretch;">`;
-      // Línea vertical
-      h += `<div style="display:flex;flex-direction:column;align-items:center;width:32px;flex-shrink:0;">
-        <div style="width:2px;background:#d1d5db;flex:1;min-height:16px;"></div>
-        <div style="width:2px;background:${isLastBranch?'transparent':'#d1d5db'};flex:1;"></div>
-      </div>`;
-
-      h += `<div style="flex:1;padding:0 0 0 0;">`;
-        // Línea horizontal + rama
-        h += `<div style="display:flex;align-items:center;gap:0;margin:4px 0;">
-          <div style="width:20px;height:2px;background:#d1d5db;flex-shrink:0;"></div>
-          ${branchNode(branch.label, p)}
-        </div>`;
-
-        // Hojas de esta rama
-        if (children.length) {
-          children.forEach((child, ci) => {
-            const isLastLeaf = ci === children.length - 1;
-            h += `<div style="display:flex;align-items:stretch;margin-left:20px;">`;
-            // Línea vertical hoja
-            h += `<div style="display:flex;flex-direction:column;align-items:center;width:24px;flex-shrink:0;">
-              <div style="width:2px;background:${p.border};opacity:.4;flex:1;min-height:12px;"></div>
-              <div style="width:2px;background:${isLastLeaf?'transparent':p.border};opacity:.4;flex:1;"></div>
-            </div>`;
-            h += `<div style="display:flex;align-items:center;gap:0;margin:3px 0;">
-              <div style="width:14px;height:2px;background:${p.border};opacity:.4;flex-shrink:0;"></div>
-              ${leafNode(child, p)}
-            </div>`;
-            h += `</div>`;
-          });
-        }
-      h += `</div></div>`;
+    groups.forEach(g => {
+      // raíz → rama (bezier)
+      const midY = (Y0+RH+Y1)/2;
+      paths += `<path d="M${rootCX},${Y0+RH} C${rootCX},${midY} ${g.cx},${midY} ${g.cx},${Y1}"
+        fill="none" stroke="${g.p.border}" stroke-width="2.5" stroke-opacity=".45" stroke-linecap="round"/>`;
+      // rama → hojas
+      const n = g.children.length;
+      const lsX = g.cx - (n*LW+(n-1)*GAP_L)/2;
+      g.children.forEach((_,li) => {
+        const lcx = lsX+li*(LW+GAP_L)+LW/2;
+        const midY2 = (Y1+BH+Y2)/2;
+        paths += `<path d="M${g.cx},${Y1+BH} C${g.cx},${midY2} ${lcx},${midY2} ${lcx},${Y2}"
+          fill="none" stroke="${g.p.border}" stroke-width="1.5" stroke-opacity=".3" stroke-linecap="round"/>`;
+      });
     });
 
-    h += `</div>`;
-    return h;
+    // ── Nodos HTML absolutamente posicionados ──
+    function nd(x,y,w,h,txt,st) {
+      return `<div style="position:absolute;left:${Math.round(x)}px;top:${y}px;width:${w}px;
+        display:flex;align-items:center;justify-content:center;text-align:center;
+        min-height:${h}px;padding:6px 12px;box-sizing:border-box;word-break:break-word;${st}">${txt}</div>`;
+    }
+
+    let divs = nd(
+      rootCX-RW/2, Y0, RW, RH, esc(trunc(rootLabel,32)),
+      'background:linear-gradient(135deg,#111827,#1f2937);color:#fff;font-weight:800;font-size:.95rem;'+
+      `border-radius:${RH/2}px;box-shadow:0 6px 28px rgba(0,0,0,.28);letter-spacing:-.2px;`
+    );
+
+    groups.forEach(g => {
+      divs += nd(
+        g.cx-BW/2, Y1, BW, BH, esc(trunc(g.label,24)),
+        `background:${g.p.bg};border:2px solid ${g.p.border};color:${g.p.text};font-weight:700;font-size:.85rem;`+
+        `border-radius:${BH/2}px;box-shadow:0 3px 14px ${g.p.glow};`
+      );
+      const n = g.children.length;
+      const lsX = g.cx-(n*LW+(n-1)*GAP_L)/2;
+      g.children.forEach((child,li) => {
+        divs += nd(
+          lsX+li*(LW+GAP_L), Y2, LW, LH, esc(trunc(child,20)),
+          `background:#fff;border:1.5px solid #e5e7eb;color:#374151;font-size:.78rem;font-weight:500;`+
+          `border-radius:${LH/2}px;box-shadow:0 2px 8px rgba(0,0,0,.07);`
+        );
+      });
+    });
+
+    return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px;">
+      <div style="position:relative;width:${totalW}px;height:${svgH}px;">
+        <svg style="position:absolute;top:0;left:0;" width="${totalW}" height="${svgH}" overflow="visible">${paths}</svg>
+        ${divs}
+      </div>
+    </div>`;
   }
 
   let html = '';
 
   if (tipo === 'timeline') {
-    // Timeline: línea vertical con nodos circulares
-    html = `<div style="position:relative;padding-left:28px;display:flex;flex-direction:column;gap:0;">
-      <div style="position:absolute;left:7px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--text),#d1d5db);border-radius:2px;"></div>`;
-    data.forEach((e, i) => {
-      const isFirst = i === 0;
-      html += `
-        <div style="position:relative;padding:0 0 ${i < data.length-1 ? '28' : '0'}px 28px;">
-          <div style="position:absolute;left:-7px;top:3px;width:16px;height:16px;border-radius:50%;
-            background:${isFirst ? 'var(--text)' : 'var(--page)'};
-            border:2.5px solid ${isFirst ? 'var(--text)' : '#9ca3af'};
-            box-shadow:0 0 0 3px var(--bg);"></div>
-          <div style="font-size:.7rem;font-weight:800;font-family:var(--mono);color:var(--muted);
-            text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">${esc(e.year)}</div>
-          <div style="font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:4px;">${esc(e.event)}</div>
-          <div style="font-size:.84rem;color:var(--text2);line-height:1.55;">${esc(e.detail)}</div>
-        </div>`;
+    const TCOLS = ['#3b82f6','#8b5cf6','#ec4899','#f97316','#22c55e','#14b8a6','#ef4444','#a855f7'];
+    html = `<div style="position:relative;padding-left:36px;">
+      <div style="position:absolute;left:10px;top:8px;bottom:0;width:2px;
+        background:linear-gradient(to bottom,#111,#e5e7eb);border-radius:2px;"></div>`;
+    data.forEach((e,i) => {
+      const col = TCOLS[i%TCOLS.length];
+      html += `<div style="position:relative;margin-bottom:${i<data.length-1?'32':'0'}px;padding-left:28px;">
+        <div style="position:absolute;left:-4px;top:4px;width:20px;height:20px;border-radius:50%;
+          background:${col};border:3px solid #fff;
+          box-shadow:0 0 0 3px ${col}40,0 2px 10px ${col}60;"></div>
+        <div style="font-size:.68rem;font-weight:800;color:${col};text-transform:uppercase;
+          letter-spacing:.1em;margin-bottom:5px;font-family:var(--mono);">${esc(e.year)}</div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px 16px;
+          box-shadow:0 2px 12px rgba(0,0,0,.07);">
+          <div style="font-weight:700;font-size:.93rem;color:#111;margin-bottom:5px;">${esc(e.event)}</div>
+          <div style="font-size:.82rem;color:#6b7280;line-height:1.55;">${esc(e.detail)}</div>
+        </div>
+      </div>`;
     });
     html += `</div>`;
 
   } else if (tipo === 'arbre') {
-    const branches = data.map(cat => ({
-      label: cat.categoria,
-      children: cat.subcategorias || []
-    }));
-    html = buildTree(subject, branches);
+    html = buildSVGTree(subject, data.map(c=>({ label:c.categoria, children:c.subcategorias||[] })));
 
   } else if (tipo === 'temes') {
-    const branches = data.map(t => ({
-      label: t.tema,
-      children: [...(t.elementos || []), ...(t.relacion ? [`↳ ${t.relacion}`] : [])]
-    }));
-    html = buildTree(subject, branches);
+    html = buildSVGTree(subject, data.map(t=>({ label:t.tema, children:[...(t.elementos||[]),...(t.relacion?[t.relacion]:[])]})));
 
   } else {
-    // relaciones
-    const branches = data.map(c => ({
-      label: c.concepto,
-      children: [
-        ...(c.descripcion ? [c.descripcion] : []),
-        ...(c.relacionado || []).map(r => `⟶ ${r}`)
-      ]
-    }));
-    html = buildTree(subject, branches);
+    html = buildSVGTree(subject, data.map(c=>({ label:c.concepto, children:[...(c.descripcion?[c.descripcion]:[]),...(c.relacionado||[])]})));
   }
 
-  document.getElementById('esquema-body').innerHTML =
-    `<div style="overflow-x:auto;padding-bottom:8px;">${html}</div>`;
+  document.getElementById('esquema-body').innerHTML = html;
 }
 
 // ── Quiz ─────────────────────────────────────────────────────
