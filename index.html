@@ -1573,11 +1573,7 @@ function checkCode() {
         }
       })
       .catch(() => {
-        // Sin red: dejar pasar
-        localStorage.setItem('access_code', input);
-        document.getElementById('login-screen').style.display = 'none';
-        errEl.textContent = '';
-        trackActivity(input, 'login');
+        errEl.textContent = 'Error de conexión. Inténtalo de nuevo.';
       });
   } else {
     errEl.textContent = 'Código incorrecto. Inténtalo de nuevo.';
