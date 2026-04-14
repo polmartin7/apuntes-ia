@@ -955,6 +955,25 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 }
 .note-card-del:hover { background:#fff0f0; color:#c00; }
 
+/* ─── DEBERES ─── */
+#deberes { display:none; flex-direction:column; min-height:100vh; background:var(--bg); }
+.deb-body { max-width:calc(var(--page-w) + 48px); margin:0 auto; width:100%; padding:36px 24px 80px; display:flex; flex-direction:column; gap:24px; }
+.deb-card { background:var(--page); border:1px solid var(--border); border-radius:16px; padding:28px; display:flex; flex-direction:column; gap:16px; box-shadow:0 4px 24px rgba(37,99,235,.06); }
+.deb-step { display:flex; gap:16px; align-items:flex-start; padding:16px 0; border-bottom:1px solid var(--border); }
+.deb-step:last-child { border-bottom:none; padding-bottom:0; }
+.deb-step-n { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#2563eb,#7c3aed); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.78rem; font-weight:800; flex-shrink:0; }
+.deb-step-body { flex:1; }
+.deb-step-title { font-size:.9rem; font-weight:700; color:var(--text); margin-bottom:4px; }
+.deb-step-detail { font-size:.88rem; color:var(--text2); line-height:1.65; }
+.deb-step-formula { font-family:var(--mono); font-size:.85rem; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px 12px; margin-top:8px; color:var(--accent); display:inline-block; }
+.deb-answer { background:linear-gradient(135deg,rgba(37,99,235,.08),rgba(124,58,237,.08)); border:1.5px solid #bfdbfe; border-radius:12px; padding:18px 22px; }
+.deb-answer-label { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin-bottom:6px; }
+.deb-answer-text { font-size:1.05rem; font-weight:700; color:var(--text); line-height:1.5; }
+.deb-tip { background:var(--accent-bg); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; font-size:.88rem; color:var(--text2); line-height:1.6; }
+.deb-loading { display:flex; flex-direction:column; align-items:center; gap:16px; padding:60px 0; }
+.deb-spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
 /* ─── ZONA DE AUDIO ─── */
 .audio-box { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; background: var(--bg); }
 .audio-tab { padding: 16px 18px; }
@@ -1157,6 +1176,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
       <button class="btn-sm" onclick="toggleDark()" id="btn-dark" title="Modo oscuro">🌙</button>
       <button class="btn-sm" onclick="openCal()" title="Calendario"><span class="hide-xs">📅 </span>Calendario</button>
       <button class="btn-sm" onclick="openNotas()" data-i18n="my-notas" title="Mis notas"><span class="hide-xs">🎓 </span><span data-i18n-txt="my-notas-short">Notas</span></button>
+      <button class="btn-sm" onclick="openDeberes()" title="Resolver deberes">🤖 <span class="hide-xs">Deberes</span></button>
       <button class="btn-sm primary" onclick="show('inp')" data-i18n="btn-new">+ Nuevo</button>
     </div>
   </div>
@@ -1165,6 +1185,41 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
       style="width:100%;padding:10px 14px;border-radius:var(--r);border:1px solid var(--border2);background:var(--page);color:var(--text);font-family:var(--sans);font-size:.93rem;outline:none;">
   </div>
   <div class="lib-body" id="lib-body"></div>
+</div>
+
+<!-- ════ DEBERES ════ -->
+<div id="deberes">
+  <div class="lib-bar">
+    <div class="lib-bar-title">🤖 Resolver deberes</div>
+    <div class="topbar-acts">
+      <button class="btn-sm primary" onclick="show('lib');openLib()">← Volver</button>
+    </div>
+  </div>
+  <div class="deb-body">
+    <div class="deb-card">
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Asignatura (opcional)</label>
+        <input id="deb-subj" type="text" placeholder="ej: Matemáticas, Historia, Inglés..."
+          style="padding:10px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--sans);font-size:.93rem;outline:none;transition:border-color .15s;"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Ejercicio o pregunta</label>
+        <textarea id="deb-txt" placeholder="Escribe o pega aquí el ejercicio, pregunta o problema que necesitas resolver..."
+          style="min-height:160px;resize:none;padding:12px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--sans);font-size:.93rem;line-height:1.6;outline:none;transition:border-color .15s;"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <button class="btn-main" onclick="resolverDeberes()" id="deb-btn" style="flex:1;min-width:160px;">🤖 Resolver</button>
+        <label style="cursor:pointer;">
+          <input type="file" accept="image/*" id="deb-photo-input" style="display:none" onchange="debPhotoChange(this)">
+          <span class="btn-sm" onclick="document.getElementById('deb-photo-input').click()" style="white-space:nowrap;cursor:pointer;">📷 Foto</span>
+        </label>
+        <div id="deb-photo-status" style="font-size:.8rem;color:var(--muted);"></div>
+      </div>
+    </div>
+    <div id="deb-result"></div>
+  </div>
 </div>
 
 <!-- ════ CALENDARIO ════ -->
@@ -3769,6 +3824,120 @@ async function extractPhotoText() {
   } catch(e) {
     status.innerHTML = `❌ Error: ${esc(e.message)}`;
   }
+}
+
+// ── Deberes ───────────────────────────────────────────────────
+function openDeberes() {
+  show('deberes');
+}
+
+async function debPhotoChange(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('deb-photo-status');
+  statusEl.textContent = 'Extrayendo texto de la imagen...';
+  try {
+    const apikey = DEFAULT_GROQ_KEY || document.getElementById('apikey').value.trim() || localStorage.getItem('gk') || '';
+    if (!apikey) { statusEl.textContent = 'Necesitas una clave API.'; return; }
+    const b64 = await new Promise(r => { const fr = new FileReader(); fr.onload = e => r(e.target.result.split(',')[1]); fr.readAsDataURL(file); });
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apikey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'meta-llama/llama-4-scout-17b-16e-instruct', messages: [{ role: 'user', content: [
+        { type: 'text', text: 'Extrae todo el texto de esta imagen exactamente como aparece, incluyendo fórmulas, enunciados y preguntas. Solo devuelve el texto extraído, sin comentarios.' },
+        { type: 'image_url', image_url: { url: `data:${file.type};base64,${b64}` } }
+      ]}], max_tokens: 1000 })
+    });
+    const data = await res.json();
+    const extracted = data.choices?.[0]?.message?.content?.trim();
+    if (!extracted) throw new Error('No se pudo extraer texto');
+    const txt = document.getElementById('deb-txt');
+    txt.value = txt.value ? txt.value + '\n\n' + extracted : extracted;
+    statusEl.textContent = '✅ Texto extraído correctamente';
+    setTimeout(() => statusEl.textContent = '', 3000);
+  } catch(e) {
+    statusEl.textContent = '❌ Error al leer la imagen';
+  }
+  input.value = '';
+}
+
+async function resolverDeberes() {
+  const problema = document.getElementById('deb-txt').value.trim();
+  const asig     = document.getElementById('deb-subj').value.trim();
+  const resEl    = document.getElementById('deb-result');
+  const btn      = document.getElementById('deb-btn');
+
+  if (!problema) { document.getElementById('deb-txt').focus(); return; }
+
+  const apikey = DEFAULT_GROQ_KEY || document.getElementById('apikey').value.trim() || localStorage.getItem('gk') || '';
+  if (!apikey) { resEl.innerHTML = `<div style="color:#c00;padding:16px;background:#fff0f0;border-radius:10px;">Necesitas una clave API Groq para usar esta función.</div>`; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Resolviendo...';
+  resEl.innerHTML = `<div class="deb-loading"><div class="deb-spinner"></div><div style="font-size:.9rem;color:var(--muted);">La IA está resolviendo tu ejercicio...</div></div>`;
+
+  const prompt = `Eres un profesor experto que ayuda a estudiantes a entender y resolver ejercicios.${asig ? `\nAsignatura: ${asig}` : ''}
+
+EJERCICIO:
+${problema}
+
+Responde SOLO con un JSON válido con este formato exacto (sin markdown, sin backticks):
+{
+  "tema": "nombre del tema o tipo de ejercicio",
+  "pasos": [
+    {"n": 1, "titulo": "título del paso", "detalle": "explicación clara del paso", "formula": "fórmula o cálculo si aplica (opcional, puede ser null)"},
+    ...
+  ],
+  "respuesta": "respuesta final clara y directa",
+  "consejo": "concepto clave o truco para recordar (opcional, puede ser null)"
+}
+
+Responde en el mismo idioma que el ejercicio. Sé claro, paso a paso y educativo.`;
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apikey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'llama-3.1-8b-instant', messages: [{ role: 'user', content: prompt }], max_tokens: 2000, temperature: 0.3 })
+    });
+    const data = await res.json();
+    const raw  = data.choices?.[0]?.message?.content?.trim() || '';
+    const json = JSON.parse(raw.replace(/^```(?:json)?/,'').replace(/```$/,'').trim());
+    renderDebResult(json);
+  } catch(e) {
+    resEl.innerHTML = `<div class="deb-card" style="border-color:#fecaca;background:#fff0f0;color:#c00;">
+      <strong>Error al resolver</strong><br><span style="font-size:.88rem;">Intenta de nuevo o reformula el ejercicio.</span>
+    </div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🤖 Resolver';
+  }
+}
+
+function renderDebResult(j) {
+  const resEl = document.getElementById('deb-result');
+  const pasos = (j.pasos || []).map((p, i) => `
+    <div class="deb-step">
+      <div class="deb-step-n">${p.n || i+1}</div>
+      <div class="deb-step-body">
+        <div class="deb-step-title">${esc(p.titulo || '')}</div>
+        <div class="deb-step-detail">${esc(p.detalle || '')}</div>
+        ${p.formula ? `<div class="deb-step-formula">${esc(p.formula)}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  resEl.innerHTML = `
+    <div class="deb-card">
+      <div style="display:flex;align-items:center;gap:10px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);background:var(--accent-bg);padding:4px 10px;border-radius:20px;">${esc(j.tema || 'Solución')}</div>
+      </div>
+      ${pasos}
+    </div>
+    <div class="deb-answer">
+      <div class="deb-answer-label">Respuesta final</div>
+      <div class="deb-answer-text">${esc(j.respuesta || '')}</div>
+    </div>
+    ${j.consejo ? `<div class="deb-tip">💡 <strong>Recuerda:</strong> ${esc(j.consejo)}</div>` : ''}`;
 }
 
 // Init
