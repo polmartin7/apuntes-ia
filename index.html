@@ -1141,6 +1141,77 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 .login-btn:hover { opacity: .92; transform: translateY(-1px); }
 .login-btn:active { transform: translateY(0); }
 .login-error { font-size: .82rem; color: #dc2626; min-height: 18px; margin: 6px 0 2px; }
+
+/* ── Animaciones globales ────────────────────────────────────── */
+
+/* Entrada de pantalla */
+@keyframes screenIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.screen-in { animation: screenIn .28s cubic-bezier(.22,1,.36,1) forwards; }
+
+/* Entrada del login box */
+@keyframes loginBoxIn {
+  from { opacity: 0; transform: translateY(28px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.login-box { animation: loginBoxIn .45s cubic-bezier(.34,1.4,.64,1) forwards; }
+
+/* Entrada de cards en cascada */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-card {
+  opacity: 0;
+  animation: cardIn .3s cubic-bezier(.22,1,.36,1) forwards;
+}
+
+/* Logo mark — ondas animadas */
+@keyframes waveFloat {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+.login-logo-mark svg { animation: waveFloat 2.8s ease-in-out infinite; }
+
+/* Botones — press feedback */
+button:active:not(:disabled) { transform: scale(.96) !important; transition: transform .08s !important; }
+.btn-sm:active, .btn-main:active, .quiz-next:active, .fc-flip-btn:active { transform: scale(.96) !important; }
+
+/* Toast — slide desde abajo */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(12px); }
+}
+.toast-show { animation: toastIn .25s cubic-bezier(.22,1,.36,1) forwards; }
+.toast-hide { animation: toastOut .2s ease forwards; }
+
+/* Modal — zoom in */
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(.94) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.nota-modal-box, .em-modal-box { animation: modalIn .25s cubic-bezier(.22,1,.36,1) forwards; }
+
+/* Nota score circle — pop */
+@keyframes scorePop {
+  0%   { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(1.12); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.quiz-score-circle { animation: scorePop .5s cubic-bezier(.34,1.4,.64,1) forwards; }
+
+/* Topbar logo — subtle shimmer on load */
+@keyframes logoShimmer {
+  0%   { opacity: .6; }
+  100% { opacity: 1; }
+}
+#res-topbar-logo { animation: logoShimmer .4s ease forwards; }
 </style>
 </head>
 <body>
@@ -1587,7 +1658,16 @@ function repairJSON(raw, type = 'object') {
 
 function show(id) {
   ['inp','load','res','lib','flash','quiz','esquema','notas','cal','deberes'].forEach(s => {
-    document.getElementById(s).style.display = s === id ? 'flex' : 'none';
+    const el = document.getElementById(s);
+    if (s === id) {
+      el.style.display = 'flex';
+      el.classList.remove('screen-in');
+      void el.offsetWidth; // reflow to restart animation
+      el.classList.add('screen-in');
+    } else {
+      el.style.display = 'none';
+      el.classList.remove('screen-in');
+    }
   });
   window.scrollTo(0, 0);
   if (typeof applyLang === 'function') applyLang(uiLang);
@@ -2143,10 +2223,15 @@ function exportPDF() {
 
 function showToast(msg) {
   const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:12px 20px;border-radius:10px;font-size:.88rem;font-weight:500;z-index:99999;transition:opacity .3s;';
+  t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:11px 22px;border-radius:24px;font-size:.88rem;font-weight:500;z-index:99999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.25);';
   t.textContent = msg;
+  t.classList.add('toast-show');
   document.body.appendChild(t);
-  setTimeout(() => { t.style.opacity='0'; setTimeout(()=>document.body.removeChild(t),300); }, 2200);
+  setTimeout(() => {
+    t.classList.remove('toast-show');
+    t.classList.add('toast-hide');
+    setTimeout(() => document.body.removeChild(t), 220);
+  }, 2200);
 }
 
 // ── Buscador biblioteca ───────────────────────────────────────
@@ -2973,7 +3058,7 @@ function _renderLibNotes(list) {
         <div class="subj-count">${items.length} ${items.length === 1 ? tLib.note1 : tLib.noteN}</div>
       </div>
       <div class="notes-grid">
-        ${items.map(n => `<div class="note-card" onclick="openNote(${n.id})">
+        ${items.map((n, i) => `<div class="note-card anim-card" style="animation-delay:${i * 50}ms" onclick="openNote(${n.id})">
           <div class="note-card-date">${esc(n.date)}</div>
           <div class="note-card-title">${esc(n.title)}</div>
           ${n.subtitle ? `<div class="note-card-sub">${esc(n.subtitle)}</div>` : ''}
