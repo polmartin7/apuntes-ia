@@ -1580,7 +1580,7 @@ function repairJSON(raw, type = 'object') {
 }
 
 function show(id) {
-  ['inp','load','res','lib','flash','quiz','esquema','notas','cal'].forEach(s => {
+  ['inp','load','res','lib','flash','quiz','esquema','notas','cal','deberes'].forEach(s => {
     document.getElementById(s).style.display = s === id ? 'flex' : 'none';
   });
   window.scrollTo(0, 0);
