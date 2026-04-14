@@ -128,7 +128,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 .wc { font-size: .75rem; color: var(--muted); text-align: right; }
 
 .btn-main {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: #2563eb;
   border: none;
   border-radius: 10px;
   color: #fff;
@@ -194,7 +194,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 }
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2563eb, #7c3aed);
+  background: #2563eb;
   border-radius: 4px;
   width: 0%;
   transition: width .6s cubic-bezier(.4,0,.2,1);
@@ -256,7 +256,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
   content: 'V';
   display: inline-flex; align-items: center; justify-content: center;
   width: 24px; height: 24px; border-radius: 7px;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: #2563eb;
   color: #fff; font-size: .72rem; font-weight: 900;
   flex-shrink: 0;
 }
@@ -547,7 +547,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 /* MAPA MENTAL */
 .mm-wrap { display: flex; flex-direction: column; align-items: center; gap: 20px; }
 .mm-center-box {
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: #2563eb;
   color: #fff;
   border-radius: var(--r);
   padding: 14px 28px;
@@ -730,7 +730,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 /* Barra de progreso del quiz */
 .quiz-prog-wrap { width:100%; display:flex; flex-direction:column; gap:8px; }
 .quiz-prog-bar { height:3px; background:var(--border); border-radius:3px; overflow:hidden; }
-.quiz-prog-fill { height:100%; background:linear-gradient(90deg, #2563eb, #7c3aed); border-radius:3px; transition:width .4s ease; }
+.quiz-prog-fill { height:100%; background:#2563eb; border-radius:3px; transition:width .4s ease; }
 .quiz-prog-label { font-size:.75rem; color:var(--muted); font-family:var(--mono); }
 
 /* Pregunta */
@@ -747,18 +747,18 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 }
 .quiz-opt:hover:not(:disabled) { border-color:var(--text); color:var(--text); background:var(--accent-bg); }
 .quiz-opt:disabled { cursor:default; }
-.quiz-opt.correct { border-color:#16a34a; background:#f0fdf4; color:#15803d; }
+.quiz-opt.correct { border-color:#2563eb; background:#eff6ff; color:#1d4ed8; }
 .quiz-opt.wrong   { border-color:#c00; background:#fff0f0; color:#c00; }
-.quiz-opt.reveal  { border-color:#16a34a; background:#f0fdf4; color:#15803d; opacity:.7; }
+.quiz-opt.reveal  { border-color:#2563eb; background:#eff6ff; color:#1d4ed8; opacity:.7; }
 .opt-letter {
   width:26px; height:26px; border-radius:6px; background:var(--bg);
   border:1px solid var(--border2); display:flex; align-items:center; justify-content:center;
   font-size:.75rem; font-weight:800; flex-shrink:0; font-family:var(--mono);
   transition:all .15s;
 }
-.quiz-opt.correct .opt-letter { background:#16a34a; border-color:#16a34a; color:#fff; }
+.quiz-opt.correct .opt-letter { background:#2563eb; border-color:#2563eb; color:#fff; }
 .quiz-opt.wrong   .opt-letter { background:#c00; border-color:#c00; color:#fff; }
-.quiz-opt.reveal  .opt-letter { background:#16a34a; border-color:#16a34a; color:#fff; }
+.quiz-opt.reveal  .opt-letter { background:#2563eb; border-color:#2563eb; color:#fff; }
 
 /* Feedback */
 .quiz-feedback {
@@ -796,7 +796,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 .quiz-review-item { background:var(--page); border:1px solid var(--border); border-radius:var(--r); padding:14px 18px; }
 .quiz-review-q { font-size:.88rem; font-weight:700; color:var(--text); margin-bottom:6px; }
 .quiz-review-ans { font-size:.84rem; display:flex; flex-direction:column; gap:3px; }
-.quiz-review-correct { color:#16a34a; font-weight:600; }
+.quiz-review-correct { color:#2563eb; font-weight:600; }
 .quiz-review-wrong { color:#c00; }
 .quiz-actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
 .quiz-act-btn {
@@ -805,7 +805,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
   font-size:.88rem; font-weight:600; padding:10px 20px; transition:all .15s;
 }
 .quiz-act-btn:hover { background:var(--accent-bg); border-color:var(--border2); }
-.quiz-act-btn.main { background:linear-gradient(135deg,#2563eb,#1d4ed8); border-color:#2563eb; color:#fff; box-shadow:0 2px 10px rgba(37,99,235,.25); }
+.quiz-act-btn.main { background:#2563eb; border-color:#2563eb; color:#fff; box-shadow:0 2px 10px rgba(37,99,235,.25); }
 .quiz-act-btn.main:hover { opacity:.9; }
 
 .len-btn {
@@ -874,7 +874,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 .fc-btn:hover { background:var(--accent-bg); border-color:var(--border2); }
 .fc-btn:disabled { opacity:.3; cursor:not-allowed; }
 .fc-flip-btn {
-  background:linear-gradient(135deg,#2563eb,#1d4ed8); border:1px solid #2563eb; border-radius:8px;
+  background:#2563eb; border:1px solid #2563eb; border-radius:8px;
   color:#fff; cursor:pointer; font-family:var(--sans);
   font-size:.9rem; font-weight:600; padding:10px 28px; transition:opacity .15s;
   box-shadow:0 2px 10px rgba(37,99,235,.28);
@@ -890,7 +890,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 .fc-result-title { font-size:1.4rem; font-weight:800; color:var(--text); letter-spacing:-.4px; }
 .fc-result-sub { font-size:.95rem; color:var(--text2); }
 .fc-restart {
-  margin-top:8px; background:linear-gradient(135deg,#2563eb,#1d4ed8); border:none; border-radius:8px;
+  margin-top:8px; background:#2563eb; border:none; border-radius:8px;
   color:#fff; cursor:pointer; font-family:var(--sans);
   font-size:.93rem; font-weight:600; padding:12px 28px; transition:opacity .15s;
   box-shadow:0 4px 14px rgba(37,99,235,.28);
@@ -961,7 +961,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 .deb-card { background:var(--page); border:1px solid var(--border); border-radius:16px; padding:28px; display:flex; flex-direction:column; gap:16px; box-shadow:0 4px 24px rgba(37,99,235,.06); }
 .deb-step { display:flex; gap:16px; align-items:flex-start; padding:16px 0; border-bottom:1px solid var(--border); }
 .deb-step:last-child { border-bottom:none; padding-bottom:0; }
-.deb-step-n { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#2563eb,#7c3aed); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.78rem; font-weight:800; flex-shrink:0; }
+.deb-step-n { width:32px; height:32px; border-radius:50%; background:#2563eb; color:#fff; display:flex; align-items:center; justify-content:center; font-size:.78rem; font-weight:800; flex-shrink:0; }
 .deb-step-body { flex:1; }
 .deb-step-title { font-size:.9rem; font-weight:700; color:var(--text); margin-bottom:4px; }
 .deb-step-detail { font-size:.88rem; color:var(--text2); line-height:1.65; }
@@ -1088,7 +1088,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 }
 .login-logo-mark {
   width: 68px; height: 68px; border-radius: 20px;
-  background: linear-gradient(135deg, #1e40af, #2563eb);
+  background: #1e3a8a;
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto 16px;
   box-shadow: 0 6px 24px rgba(37,99,235,.32);
@@ -1131,7 +1131,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 }
 .login-btn {
   width: 100%; padding: 14px;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: #2563eb;
   color: #fff; border: none; border-radius: 12px;
   font-family: var(--sans); font-size: .97rem; font-weight: 700;
   cursor: pointer; transition: opacity .15s, transform .1s;
@@ -2024,10 +2024,10 @@ function deleteExamNota(id) {
 }
 
 function notaColor(n) {
-  if (n >= 9) return '#16a34a';
+  if (n >= 9) return '#1e3a8a';
   if (n >= 7) return '#2563eb';
-  if (n >= 5) return '#d97706';
-  return '#dc2626';
+  if (n >= 5) return '#64748b';
+  return '#94a3b8';
 }
 
 function notaLabel(n) {
@@ -2083,12 +2083,12 @@ function renderNotas() {
       </div>
       <div style="background:var(--page);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:center;">
         <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Mejor asig.</div>
-        <div style="font-size:2rem;font-weight:800;color:#16a34a;letter-spacing:-1px;">${best.nota.toFixed(1)}</div>
+        <div style="font-size:2rem;font-weight:800;color:#2563eb;letter-spacing:-1px;">${best.nota.toFixed(1)}</div>
         <div style="font-size:.78rem;color:var(--muted);">${esc(best.asig)}</div>
       </div>
       <div style="background:var(--page);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:center;">
         <div style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Peor asig.</div>
-        <div style="font-size:2rem;font-weight:800;color:#dc2626;letter-spacing:-1px;">${worst.nota.toFixed(1)}</div>
+        <div style="font-size:2rem;font-weight:800;color:#64748b;letter-spacing:-1px;">${worst.nota.toFixed(1)}</div>
         <div style="font-size:.78rem;color:var(--muted);">${esc(worst.asig)}</div>
       </div>
       <div style="background:var(--page);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:center;">
@@ -2109,8 +2109,8 @@ function renderNotas() {
     const pesoRestante = 100 - totalPeso;
     const pesoTag = isPond
       ? (totalPeso === 100
-          ? `<span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#16a34a22;color:#16a34a;margin-left:6px;">100% ✓</span>`
-          : `<span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#d9770622;color:#d97706;margin-left:6px;">${totalPeso}% · falta ${pesoRestante}%</span>`)
+          ? `<span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#2563eb18;color:#2563eb;margin-left:6px;">100% ✓</span>`
+          : `<span style="font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#64748b18;color:#64748b;margin-left:6px;">${totalPeso}% · falta ${pesoRestante}%</span>`)
       : '';
     html += `
       <div style="background:var(--page);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
@@ -2141,7 +2141,7 @@ function renderNotas() {
         </div>
         ${(isPond && pesoRestante > 0) ? (() => {
           const wSum = conPeso.reduce((s, n) => s + n.nota * n.peso, 0);
-          const targets = [{label:'Aprobar',t:5,c:'#16a34a'},{label:'Notable',t:7,c:'#2563eb'},{label:'Sobresaliente',t:9,c:'#7c3aed'}];
+          const targets = [{label:'Aprobar',t:5,c:'#2563eb'},{label:'Notable',t:7,c:'#1d4ed8'},{label:'Sobresaliente',t:9,c:'#1e3a8a'}];
           const pills = targets.map(({label,t,c}) => {
             const needed = (t * 100 - wSum) / pesoRestante;
             if (needed < 0) return `<span style="font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:20px;background:${c}18;color:${c};">✓ ${label}</span>`;
@@ -2343,11 +2343,11 @@ function renderEsquema(data, tipo) {
   const subject = (currentNotes && currentNotes.subject) ? currentNotes.subject : 'Esquema';
 
   const PALETTES = [
-    { bg:'#eff6ff', border:'#3b82f6', text:'#1d4ed8', glow:'#3b82f620' },
-    { bg:'#f0fdf4', border:'#22c55e', text:'#15803d', glow:'#22c55e20' },
-    { bg:'#fdf4ff', border:'#a855f7', text:'#7e22ce', glow:'#a855f720' },
-    { bg:'#fff7ed', border:'#f97316', text:'#c2410c', glow:'#f9731620' },
-    { bg:'#fef2f2', border:'#ef4444', text:'#b91c1c', glow:'#ef444420' },
+    { bg:'#eff6ff', border:'#93c5fd', text:'#1d4ed8', glow:'#3b82f615' },
+    { bg:'#f8fafc', border:'#cbd5e1', text:'#334155', glow:'#64748b15' },
+    { bg:'#eff6ff', border:'#bfdbfe', text:'#1e40af', glow:'#2563eb15' },
+    { bg:'#f8fafc', border:'#94a3b8', text:'#1e293b', glow:'#47556915' },
+    { bg:'#f0f9ff', border:'#7dd3fc', text:'#0369a1', glow:'#0ea5e915' },
   ];
 
   // ── Árbol vertical con texto libre ────────────────────────────
@@ -2419,7 +2419,7 @@ function renderEsquema(data, tipo) {
   let html = '';
 
   if (tipo === 'timeline') {
-    const TCOLS = ['#3b82f6','#8b5cf6','#ec4899','#f97316','#22c55e','#14b8a6','#ef4444','#a855f7'];
+    const TCOLS = ['#2563eb','#3b82f6','#60a5fa','#1d4ed8','#93c5fd','#1e40af','#7dd3fc','#bfdbfe'];
     html = `<div style="position:relative;padding-left:36px;">
       <div style="position:absolute;left:10px;top:8px;bottom:0;width:2px;
         background:linear-gradient(to bottom,#111,#e5e7eb);border-radius:2px;"></div>`;
@@ -3558,7 +3558,7 @@ function renderCal() {
     .sort((a,b) => a.date.localeCompare(b.date)).slice(0, 6);
   const upEl = document.getElementById('cal-upcoming');
   if (!upcoming.length) { upEl.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:.88rem;padding:20px">No hay exámenes pendientes</div>'; return; }
-  const dotColor = d => d <= 2 ? '#dc2626' : d <= 7 ? '#d97706' : '#2563eb';
+  const dotColor = d => d <= 2 ? '#1e3a8a' : d <= 7 ? '#2563eb' : '#94a3b8';
   const badge = d => d === 0 ? '🔴 Hoy' : d === 1 ? '🟠 Mañana' : d <= 7 ? `🟡 En ${d} días` : `📅 En ${d} días`;
   upEl.innerHTML = `<div class="cal-upcoming-title">Próximos exámenes</div>` + upcoming.map(e => {
     const d = new Date(e.date + 'T00:00:00');
