@@ -3772,12 +3772,13 @@ async function transcribeChunk(samples, SR, apikey, status, i, total) {
   form.append('file', blob, `chunk${i}.wav`);
   form.append('model', 'whisper-large-v3-turbo');
   form.append('response_format', 'text');
+  form.append('language', 'es');
   const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + apikey },
     body: form
   });
-  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Error ' + res.status); }
+  if (!res.ok) { let e; try { e = await res.json(); } catch(_){} throw new Error(e?.error?.message || 'HTTP ' + res.status); }
   return await res.text();
 }
 
@@ -3804,11 +3805,15 @@ async function handleAudio(file) {
       }
       transcription = parts.join(' ');
     } else {
-      status.innerHTML = `<div class="spin-sm"></div> Transcribiendo <em>${file.name}</em>...`;
+      status.innerHTML = `<div class="spin-sm"></div> Transcribiendo audio...`;
       const form = new FormData();
-      form.append('file', file, file.name);
+      // Forzar extensión correcta según tipo MIME
+      const mime = file.type || 'audio/webm';
+      const ext  = mime.includes('ogg') ? 'ogg' : mime.includes('mp4') || mime.includes('m4a') ? 'mp4' : mime.includes('wav') ? 'wav' : 'webm';
+      form.append('file', file, `audio.${ext}`);
       form.append('model', 'whisper-large-v3-turbo');
       form.append('response_format', 'text');
+      form.append('language', 'es');
       const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + apikey },
@@ -3816,27 +3821,25 @@ async function handleAudio(file) {
       });
 
       if (!res.ok) {
-        let msg = 'Error ' + res.status;
-        try { const e = await res.json(); msg = e.error?.message || msg; } catch(_) {}
+        let msg = 'HTTP ' + res.status;
+        try { const e = await res.json(); msg = e.error?.message || e.error?.code || msg; } catch(_) {}
         throw new Error(msg);
       }
       transcription = (await res.text()).trim();
     }
 
-    if (!transcription) throw new Error('La transcripción volvió vacía. Comprueba que el audio tiene voz.');
+    if (!transcription) throw new Error('Transcripción vacía — asegúrate de que el audio tiene voz audible.');
 
-    // Añadir al textarea (no reemplazar, para permitir varias grabaciones seguidas)
     const area = document.getElementById('txt');
     area.value = area.value ? area.value + '\n\n' + transcription : transcription;
     wc();
     const total = area.value.trim().split(/\s+/).length;
-    status.innerHTML = `✅ Transcripción añadida — ${total} palabras en total. Puedes grabar otro fragmento.`;
-    // Resetear grabador para que pueda grabar otro audio
+    status.innerHTML = `✅ Transcripción añadida — ${total} palabras en total.`;
     setTimeout(() => resetAudio(), 2500);
 
   } catch(e) {
-    alert('Error al transcribir:\n\n' + e.message + '\n\nComprueba que la clave API es correcta y el archivo es un audio válido.');
-    resetAudio();
+    status.innerHTML = `❌ Error: ${e.message}`;
+    status.style.color = '#c00';
   }
 }
 
