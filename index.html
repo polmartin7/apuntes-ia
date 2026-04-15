@@ -323,109 +323,95 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 }
 .doc-subtitle { font-size: .97rem; color: var(--text2); font-weight: 400; max-width: 620px; line-height: 1.65; }
 
-/* ─── PUNTOS CLAVE (nuevo bloque prominente) ─── */
+/* ─── PUNTOS CLAVE ─── */
 .doc-takeaways {
-  background: var(--text);
-  border-radius: 16px;
-  padding: 28px 32px;
-  margin-bottom: 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 44px;
 }
-.doc-takeaways-label {
-  font-size: .65rem; font-weight: 800; letter-spacing: .14em;
-  text-transform: uppercase; color: rgba(255,255,255,.45);
-}
-.doc-takeaways-list { display: flex; flex-direction: column; gap: 10px; }
 .doc-takeaway {
-  display: flex; gap: 14px; align-items: flex-start;
-}
-.doc-takeaway-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: #2563eb; flex-shrink: 0; margin-top: 7px;
-}
-.doc-takeaway-text {
-  font-size: .95rem; color: rgba(255,255,255,.88); line-height: 1.6; font-weight: 500;
-}
-
-/* ─── RESUMEN ─── */
-.doc-summary {
-  margin-bottom: 48px;
-  padding: 22px 26px;
-  background: var(--bg);
+  background: var(--page);
   border: 1px solid var(--border);
-  border-radius: var(--r);
-  font-size: .94rem;
-  line-height: 1.85;
-  color: var(--text2);
-  position: relative;
+  border-top: 3px solid var(--accent);
+  border-radius: 0 0 12px 12px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
 }
-.doc-summary-label {
-  font-size: .63rem; font-weight: 800; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+.doc-takeaway-n {
+  font-family: var(--mono); font-size: .62rem; font-weight: 800;
+  color: var(--accent); letter-spacing: .1em; margin-bottom: 6px;
 }
-.doc-summary strong { color: var(--text); }
+.doc-takeaway-text { font-size: .88rem; color: var(--text); line-height: 1.6; font-weight: 500; }
 
 /* ─── SECCIÓN ─── */
-.doc-section {
-  padding-top: 44px;
-  margin-bottom: 44px;
-  border-top: 1px solid var(--border);
+.doc-section { padding-top: 48px; margin-bottom: 0; }
+.sec-header {
+  display: flex; align-items: baseline; gap: 14px; margin-bottom: 22px;
+  padding-bottom: 16px; border-bottom: 1px solid var(--border);
+}
+.sec-n {
+  font-family: var(--mono); font-size: 2.8rem; font-weight: 900;
+  color: var(--border2); line-height: 1; flex-shrink: 0; letter-spacing: -.04em;
 }
 .sec-heading {
-  font-size: 1.1rem; font-weight: 800; letter-spacing: -.4px;
-  color: var(--text); margin-bottom: 24px;
-  display: flex; align-items: center; gap: 12px;
+  font-size: 1.25rem; font-weight: 800; letter-spacing: -.5px;
+  color: var(--text); line-height: 1.2;
 }
-.sec-num-badge {
-  font-family: var(--mono); font-size: .68rem; font-weight: 700;
-  color: var(--muted); background: var(--bg);
-  border: 1px solid var(--border); border-radius: 6px;
-  padding: 3px 7px; flex-shrink: 0; letter-spacing: .04em;
-}
-.sec-icon-wrap { font-size: .95rem; flex-shrink: 0; }
+.sec-icon-wrap { font-size: 1rem; flex-shrink: 0; }
 
 /* BULLETS */
-.bullet-list { list-style: none; display: flex; flex-direction: column; gap: 0; }
+.bullet-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
 .bullet-list li {
-  display: flex; gap: 16px; align-items: flex-start;
-  padding: 13px 0; border-bottom: 1px solid var(--border);
-  font-size: .93rem; line-height: 1.7; color: var(--text2);
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 12px 16px;
+  background: var(--page); border: 1px solid var(--border); border-radius: 10px;
+  font-size: .93rem; line-height: 1.65; color: var(--text2);
+  transition: border-color .15s;
 }
-.bullet-list li:last-child { border-bottom: none; }
+.bullet-list li:hover { border-color: var(--border2); }
 .bullet-list li::before {
   content: '';
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--border2); flex-shrink: 0; margin-top: 9px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0; margin-top: 8px;
 }
 
 /* PASOS */
-.steps-wrap { display: flex; flex-direction: column; gap: 0; }
+.steps-wrap { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 20px; }
+.steps-wrap::before {
+  content: ''; position: absolute; left: 11px; top: 24px; bottom: 24px;
+  width: 2px; background: var(--border);
+}
 .step-row {
   display: flex; gap: 20px; align-items: flex-start;
-  padding: 16px 0; border-bottom: 1px solid var(--border);
+  padding: 6px 0 20px;
 }
-.step-row:last-child { border-bottom: none; }
+.step-row:last-child { padding-bottom: 0; }
 .step-n {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--text); color: #fff;
-  font-family: var(--mono); font-size: .72rem; font-weight: 800;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-family: var(--mono); font-size: .68rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; z-index: 1; box-shadow: 0 0 0 3px var(--bg);
 }
-.step-body { font-size: .93rem; line-height: 1.7; color: var(--text2); padding-top: 4px; }
+.step-body { font-size: .93rem; line-height: 1.7; color: var(--text2); padding-top: 2px; }
+.step-title { font-weight: 700; color: var(--text); margin-bottom: 2px; }
 
 /* HIGHLIGHT CARDS */
-.hgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.hgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
 .hcard {
   background: var(--page); border: 1px solid var(--border); border-radius: var(--r);
-  padding: 22px; display: flex; flex-direction: column; gap: 10px;
-  box-shadow: var(--shadow-sm); transition: box-shadow .2s, transform .15s;
+  overflow: hidden; box-shadow: var(--shadow-sm); transition: box-shadow .2s, transform .15s;
+  display: flex; flex-direction: column;
 }
 .hcard:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.hcard-ico { font-size: 1.3rem; }
-.hcard-t { font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--text); }
-.hcard-b { font-size: .88rem; line-height: 1.65; color: var(--text2); }
+.hcard-top {
+  background: var(--text); padding: 14px 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hcard-ico { font-size: 1.1rem; }
+.hcard-t { font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: rgba(255,255,255,.9); }
+.hcard-b { font-size: .88rem; line-height: 1.65; color: var(--text2); padding: 16px; }
 
 /* COMPARATIVA */
 .cmp-wrap {
@@ -628,62 +614,75 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 .vocab-table .v-note { font-size: .8rem; color: var(--muted); }
 
 /* ─── CONCEPTOS ─── */
-.concepts-section { padding-top: 44px; border-top: 1px solid var(--border); margin-bottom: 44px; }
-.concept-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 10px;
-  margin-top: 20px;
-}
+.concepts-section { padding-top: 48px; margin-bottom: 0; }
+.concepts-section .sec-header { border-bottom: 1px solid var(--border); }
+.concept-grid { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; margin-top: 0; }
 .concept-item {
-  background: var(--page);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px 20px;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow .2s, transform .15s;
+  display: grid; grid-template-columns: 200px 1fr;
+  border-bottom: 1px solid var(--border);
 }
-.concept-item:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.concept-item:last-child { border-bottom: none; }
 .concept-term {
-  font-size: .7rem; font-weight: 800; text-transform: uppercase;
-  letter-spacing: .1em; color: var(--accent); margin-bottom: 8px;
+  padding: 14px 18px;
+  font-size: .82rem; font-weight: 800; color: var(--text);
+  background: var(--bg); border-right: 1px solid var(--border);
+  display: flex; align-items: center;
 }
-.concept-def { font-size: .88rem; color: var(--text2); line-height: 1.6; }
+.concept-def { padding: 14px 18px; font-size: .88rem; color: var(--text2); line-height: 1.6; background: var(--page); }
 
 /* ─── EJEMPLOS ─── */
-.examples-section { padding-top: 44px; border-top: 1px solid var(--border); margin-bottom: 44px; }
+.examples-section { padding-top: 48px; margin-bottom: 0; }
+.examples-section .sec-header { border-bottom: 1px solid var(--border); }
 .example-item {
-  display: flex; gap: 18px; align-items: flex-start;
-  padding: 18px; margin-bottom: 8px;
-  background: var(--page); border: 1px solid var(--border); border-radius: 12px;
+  margin-top: 10px;
+  background: var(--page); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+}
+.ex-header {
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  padding: 10px 18px; display: flex; align-items: center; gap: 10px;
 }
 .ex-num {
-  font-family: var(--mono); font-size: .72rem; font-weight: 800;
-  color: var(--accent); background: var(--accent-bg);
-  border-radius: 6px; padding: 3px 7px; flex-shrink: 0; line-height: 1.6;
+  font-family: var(--mono); font-size: .68rem; font-weight: 800;
+  color: var(--muted); letter-spacing: .08em;
 }
-.ex-text { font-size: .92rem; color: var(--text2); line-height: 1.7; }
+.ex-title { font-size: .82rem; font-weight: 700; color: var(--text); }
+.ex-text { font-size: .92rem; color: var(--text2); line-height: 1.75; padding: 16px 18px; }
 
-/* ─── IMPORTANTE / PARA EL EXAMEN ─── */
-.important-section { padding-top: 44px; border-top: 1px solid var(--border); margin-bottom: 44px; }
-.important-section .sec-heading { margin-bottom: 16px; }
-.imp-grid { display: flex; flex-direction: column; gap: 8px; }
+/* ─── PARA EL EXAMEN ─── */
+.exam-section { padding-top: 48px; margin-bottom: 0; }
+.exam-block {
+  background: var(--text);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-top: 0;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.exam-block-label {
+  font-size: .62rem; font-weight: 800; letter-spacing: .14em;
+  text-transform: uppercase; color: rgba(255,255,255,.4);
+}
+.exam-tip {
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.exam-tip-bullet {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0; margin-top: 8px;
+}
+.exam-tip-text { font-size: .92rem; color: rgba(255,255,255,.85); line-height: 1.65; }
+
+/* ─── IMPORTANTE (legacy) ─── */
+.important-section { padding-top: 48px; margin-bottom: 0; }
+.important-section .sec-header { border-bottom: 1px solid var(--border); }
+.imp-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
 .imp-item {
   display: flex; align-items: flex-start; gap: 14px;
-  padding: 16px 20px;
-  background: var(--page);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  font-size: .92rem; color: var(--text2); line-height: 1.7;
-  box-shadow: var(--shadow-sm);
+  padding: 14px 18px; background: var(--page);
+  border: 1px solid var(--border); border-radius: 10px;
+  font-size: .91rem; color: var(--text2); line-height: 1.65;
 }
 .imp-item::before {
-  content: '!';
-  font-family: var(--mono); font-size: .72rem; font-weight: 900;
-  background: var(--text); color: #fff;
-  width: 20px; height: 20px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; margin-top: 2px;
+  content: '→'; font-weight: 900; color: var(--accent);
+  flex-shrink: 0; margin-top: 1px;
 }
 
 /* ─── QUIZ ─── */
@@ -3212,38 +3211,53 @@ ${lang === 'English' ? 'Write absolutely everything in English. No Spanish words
 Return ONLY raw JSON (no markdown, no code blocks):
 {
   "title": "Clear topic title in ${lang}",
-  "subtitle": "One-line content description in ${lang}",
+  "subtitle": "One-line context description in ${lang}",
   "subject": "${subj}",
   "level": "${level}",
-  "key_takeaways": ["Most important idea to remember in ${lang}", "Second key insight", "Third key point", "Fourth key point"],
-  "summary": "Complete well-written summary in ${lang}, ${isFull ? '8-10' : '4-6'} sentences explaining the key points",
+  "key_takeaways": [
+    "The single most important idea from this class (big picture)",
+    "Second distinct key insight — NOT a detail, a concept",
+    "Third key point",
+    "Fourth key point"
+  ],
   "sections": [
     {
-      "type": "bullets",
-      "icon": "📌",
+      "type": "bullets|steps|highlight|compare|timeline|mindmap",
       "title": "Section title in ${lang}",
-      "items": ["Complete explained sentence in ${lang}", "Another developed point"]
+      "items": ["Complete sentence explaining ONE unique idea not covered elsewhere"]
     }
   ],
-  "concepts": [{"term": "TERM IN ${lang}", "definition": "Clear useful definition in ${lang}"}],
-  "vocabulary": [{"word": "word from the text", "translation": "translation to Spanish", "note": "usage context in ${lang}"}],
-  "examples": ["Concrete example from the text in ${lang}", "Another example"],
-  "important": ["Essential rule or point to remember in ${lang}"]
+  "concepts": [
+    {"term": "TERM", "definition": "Precise definition — only terms that appear in sections without full explanation"}
+  ],
+  "examples": [
+    {"title": "Short label in ${lang}", "body": "Full worked example or case in ${lang}"}
+  ],
+  "exam_tips": [
+    "Common mistake students make or trick to remember — NOT content already in sections"
+  ]
 }
 
-SECTION TYPES — choose the most suitable per content:
-- "bullets": list of points (general use) → use "items"
-- "steps": process or numbered sequence → use "items"
-- "highlight": highlighted concepts → use "cards": [{"icon":"emoji","title":"Title in ${lang}","body":"Text in ${lang}"}]
-- "compare": compare two things → use "columns": [{"head":"Column A name in ${lang}","items":["..."]},{"head":"Column B name in ${lang}","items":["..."]}]
-- "timeline": chronology → use "events": [{"date":"Date","title":"Event in ${lang}","body":"Description in ${lang}"}]
-- "mindmap": mind map → use "center":"Central topic in ${lang}" and "branches":[{"title":"Branch in ${lang}","items":["..."]}]
+⚠️ ANTI-REPETITION RULES (critical):
+- key_takeaways = big-picture ideas, NOT summaries of section content
+- sections = the actual content, organized by topic/subtopic. Each section covers UNIQUE ground.
+- concepts = ONLY terms that appear in sections but need a precise definition. Skip any term already fully explained in sections.
+- examples = ONLY worked problems, real cases or practical applications. Not general points.
+- exam_tips = ONLY exam strategy, common errors, tricks to remember. NEVER repeat content from sections.
+- If a piece of information already appears in one field, it MUST NOT appear in any other field.
 
-RULES:
-- Create between ${sections} sections with varied types
+SECTION TYPES — pick the best fit:
+- "bullets": list of distinct points → "items": ["..."]
+- "steps": ordered process → "items": ["Step 1 description", "Step 2 description"]
+- "highlight": key concepts worth emphasis → "cards": [{"icon":"emoji","title":"...","body":"..."}]
+- "compare": two sides of something → "columns": [{"head":"A","items":["..."]},{"head":"B","items":["..."]}]
+- "timeline": chronological events → "events": [{"date":"...","title":"...","body":"..."}]
+- "mindmap": interconnected concepts → "center":"...", "branches":[{"title":"...","items":["..."]}]
+
+CONTENT RULES:
+- ${sections} sections, all different types where possible
 ${detailRule}
-- Extract all relevant vocabulary with Spanish translation
-- Vocabulary translation column is always in Spanish regardless of output language
+- vocabulary: only if the subject involves foreign language learning
 - Return nothing outside the JSON`;
 }
 
@@ -3337,35 +3351,31 @@ function render(n) {
     ${n.subtitle ? `<div class="doc-subtitle">${esc(n.subtitle)}</div>` : ''}
   </div>`;
 
-  // Puntos clave (bloque oscuro prominente)
+  // Puntos clave — grid de tarjetas
   const takeaways = n.key_takeaways || [];
   if (takeaways.length) {
     h += `<div class="doc-takeaways">
-      <div class="doc-takeaways-label">Puntos clave</div>
-      <div class="doc-takeaways-list">
-        ${takeaways.map(t => `<div class="doc-takeaway">
-          <div class="doc-takeaway-dot"></div>
-          <div class="doc-takeaway-text">${esc(t)}</div>
-        </div>`).join('')}
-      </div>
+      ${takeaways.map((t, i) => `<div class="doc-takeaway">
+        <div class="doc-takeaway-n">0${i+1}</div>
+        <div class="doc-takeaway-text">${esc(t)}</div>
+      </div>`).join('')}
     </div>`;
   }
 
-  // Resumen
+  // Resumen (si existe en notas antiguas)
   if (n.summary) h += `<div class="doc-summary">
     <div class="doc-summary-label">Resumen</div>
     ${esc(n.summary)}
   </div>`;
 
-  // Secciones — filtrar vacías
+  // Secciones
   (n.sections || []).forEach((sec, i) => {
     const content = renderSec(sec);
     if (!content) return;
     h += `<div class="doc-section">
-      <div class="sec-heading">
-        <span class="sec-num-badge">${String(i+1).padStart(2,'0')}</span>
-        ${sec.icon ? `<span class="sec-icon-wrap">${sec.icon}</span>` : ''}
-        ${esc(sec.title)}
+      <div class="sec-header">
+        <div class="sec-n">${String(i+1).padStart(2,'0')}</div>
+        <div class="sec-heading">${sec.icon ? `<span class="sec-icon-wrap">${sec.icon} </span>` : ''}${esc(sec.title)}</div>
       </div>
       ${content}
     </div>`;
@@ -3374,7 +3384,10 @@ function render(n) {
   // Conceptos
   if (n.concepts?.length) {
     h += `<div class="concepts-section">
-      <div class="sec-heading">${esc(L.conceptsH)}</div>
+      <div class="sec-header">
+        <div class="sec-n">${String((n.sections||[]).length+1).padStart(2,'0')}</div>
+        <div class="sec-heading">${esc(L.conceptsH)}</div>
+      </div>
       <div class="concept-grid">
         ${n.concepts.map(c => `<div class="concept-item">
           <div class="concept-term">${esc(c.term)}</div>
@@ -3404,21 +3417,37 @@ function render(n) {
 
   // Ejemplos
   if (n.examples?.length) {
+    const secCount = (n.concepts?.length ? 1 : 0) + (n.sections||[]).length + 1;
     h += `<div class="examples-section">
-      <div class="sec-heading">${esc(L.examplesH)}</div>
-      ${n.examples.map((e, i) => `<div class="example-item">
-        <div class="ex-num">${String(i+1).padStart(2,'0')}</div>
-        <div class="ex-text">${esc(typeof e === 'string' ? e : (e?.text || e?.body || e?.title || Object.values(e).filter(v => typeof v === 'string').join(' — ') || ''))}</div>
-      </div>`).join('')}
+      <div class="sec-header">
+        <div class="sec-n">${String(secCount).padStart(2,'0')}</div>
+        <div class="sec-heading">${esc(L.examplesH)}</div>
+      </div>
+      ${n.examples.map((e, i) => {
+        const isObj = typeof e === 'object' && e !== null;
+        const title = isObj ? (e.title || '') : '';
+        const body  = isObj ? (e.body || e.text || Object.values(e).filter(v=>typeof v==='string').join(' ')) : e;
+        return `<div class="example-item">
+          <div class="ex-header">
+            <span class="ex-num">EJ. ${String(i+1).padStart(2,'0')}</span>
+            ${title ? `<span class="ex-title">${esc(title)}</span>` : ''}
+          </div>
+          <div class="ex-text">${esc(body)}</div>
+        </div>`;
+      }).join('')}
     </div>`;
   }
 
-  // Importante
-  if (n.important?.length) {
-    h += `<div class="important-section">
-      <div class="sec-heading">${esc(L.importantH)}</div>
-      <div class="imp-grid">
-        ${n.important.map(it => `<div class="imp-item">${esc(typeof it === 'string' ? it : (it?.text || it?.body || it?.title || Object.values(it).filter(v => typeof v === 'string').join(' — ') || ''))}</div>`).join('')}
+  // Para el examen (nuevo campo)
+  const examTips = n.exam_tips || n.important || [];
+  if (examTips.length) {
+    h += `<div class="exam-section">
+      <div class="exam-block">
+        <div class="exam-block-label">Para el examen</div>
+        ${examTips.map(t => `<div class="exam-tip">
+          <div class="exam-tip-bullet"></div>
+          <div class="exam-tip-text">${esc(typeof t === 'string' ? t : (t?.text || t?.body || t?.title || ''))}</div>
+        </div>`).join('')}
       </div>
     </div>`;
   }
@@ -3445,17 +3474,24 @@ function renderSec(sec) {
 
   if (type === 'steps') {
     if (!sec.items?.length) return '';
-    return `<div class="steps-wrap">${sec.items.map((it, i) => `<div class="step-row">
-      <div class="step-n">${String(i+1).padStart(2,'0')}</div>
-      <div class="step-body">${esc(itemStr(it))}</div>
-    </div>`).join('')}</div>`;
+    return `<div class="steps-wrap">${sec.items.map((it, i) => {
+      const isObj = typeof it === 'object' && it !== null;
+      const title = isObj ? (it.title || it.term || '') : '';
+      const body  = isObj ? (it.body || it.text || itemStr(it)) : it;
+      return `<div class="step-row">
+        <div class="step-n">${i+1}</div>
+        <div class="step-body">${title ? `<div class="step-title">${esc(title)}</div>` : ''}${esc(body)}</div>
+      </div>`;
+    }).join('')}</div>`;
   }
 
   if (type === 'highlight') {
-    const cards = sec.cards || (sec.items || []).map(it => ({ icon: '—', title: '', body: it }));
+    const cards = sec.cards || (sec.items || []).map(it => ({ icon: '📌', title: '', body: itemStr(it) }));
     return `<div class="hgrid">${cards.map(c => `<div class="hcard">
-      <div class="hcard-ico">${c.icon || '—'}</div>
-      ${c.title ? `<div class="hcard-t">${esc(c.title)}</div>` : ''}
+      <div class="hcard-top">
+        <div class="hcard-ico">${c.icon || '📌'}</div>
+        ${c.title ? `<div class="hcard-t">${esc(c.title)}</div>` : ''}
+      </div>
       <div class="hcard-b">${esc(c.body || '')}</div>
     </div>`).join('')}</div>`;
   }
