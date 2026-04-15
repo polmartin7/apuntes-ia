@@ -294,7 +294,7 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 
 /* ─── DOCUMENTO ─── */
 .doc {
-  padding: 60px 24px 100px;
+  padding: 56px 24px 100px;
   max-width: calc(var(--page-w) + 48px);
   margin: 0 auto;
   width: 100%;
@@ -305,43 +305,48 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 
 /* ─── PORTADA ─── */
 .doc-cover {
-  padding-bottom: 44px;
-  margin-bottom: 44px;
-  border-bottom: 1px solid var(--border);
+  padding-bottom: 40px;
+  margin-bottom: 40px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
-.cover-meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+.cover-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .pill {
-  font-size: .68rem;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  padding: 3px 10px;
-  color: var(--muted);
-  background: var(--bg);
+  font-size: .68rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; border: 1px solid var(--border);
+  border-radius: 100px; padding: 3px 10px; color: var(--muted); background: var(--bg);
 }
 .doc-title {
-  font-size: 2.2rem;
-  font-weight: 900;
-  letter-spacing: -1.4px;
-  line-height: 1.08;
-  color: var(--text);
-  max-width: 720px;
+  font-size: 2.4rem; font-weight: 900; letter-spacing: -1.5px;
+  line-height: 1.05; color: var(--text); max-width: 760px;
 }
-.doc-subtitle {
-  font-size: 1rem;
-  color: var(--text2);
-  font-weight: 400;
-  max-width: 620px;
-  line-height: 1.6;
+.doc-subtitle { font-size: .97rem; color: var(--text2); font-weight: 400; max-width: 620px; line-height: 1.65; }
+
+/* ─── PUNTOS CLAVE (nuevo bloque prominente) ─── */
+.doc-takeaways {
+  background: var(--text);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.doc-takeaways-label {
+  font-size: .65rem; font-weight: 800; letter-spacing: .14em;
+  text-transform: uppercase; color: rgba(255,255,255,.45);
+}
+.doc-takeaways-list { display: flex; flex-direction: column; gap: 10px; }
+.doc-takeaway {
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.doc-takeaway-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #2563eb; flex-shrink: 0; margin-top: 7px;
+}
+.doc-takeaway-text {
+  font-size: .95rem; color: rgba(255,255,255,.88); line-height: 1.6; font-weight: 500;
 }
 
 /* ─── RESUMEN ─── */
@@ -350,120 +355,77 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
   padding: 22px 26px;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--text);
-  border-radius: 0 12px 12px 0;
-  font-size: .95rem;
+  border-radius: var(--r);
+  font-size: .94rem;
   line-height: 1.85;
   color: var(--text2);
+  position: relative;
+}
+.doc-summary-label {
+  font-size: .63rem; font-weight: 800; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
 }
 .doc-summary strong { color: var(--text); }
 
 /* ─── SECCIÓN ─── */
 .doc-section {
-  padding-top: 40px;
-  margin-bottom: 40px;
+  padding-top: 44px;
+  margin-bottom: 44px;
   border-top: 1px solid var(--border);
 }
-.sec-num {
-  font-size: .66rem;
-  font-weight: 700;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 6px;
-  font-family: var(--mono);
-}
 .sec-heading {
-  font-size: 1.15rem;
-  font-weight: 800;
-  letter-spacing: -.4px;
-  color: var(--text);
-  margin-bottom: 22px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  font-size: 1.1rem; font-weight: 800; letter-spacing: -.4px;
+  color: var(--text); margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
 }
-.sec-icon-wrap {
-  font-size: 1rem;
-  width: 28px;
-  text-align: center;
-  flex-shrink: 0;
+.sec-num-badge {
+  font-family: var(--mono); font-size: .68rem; font-weight: 700;
+  color: var(--muted); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 3px 7px; flex-shrink: 0; letter-spacing: .04em;
 }
+.sec-icon-wrap { font-size: .95rem; flex-shrink: 0; }
 
 /* BULLETS */
-.bullet-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
+.bullet-list { list-style: none; display: flex; flex-direction: column; gap: 0; }
 .bullet-list li {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: .95rem;
-  line-height: 1.65;
-  color: var(--text2);
+  display: flex; gap: 16px; align-items: flex-start;
+  padding: 13px 0; border-bottom: 1px solid var(--border);
+  font-size: .93rem; line-height: 1.7; color: var(--text2);
 }
 .bullet-list li:last-child { border-bottom: none; }
 .bullet-list li::before {
-  content: '—';
-  color: var(--muted);
-  font-size: .85rem;
-  flex-shrink: 0;
-  margin-top: 2px;
+  content: '';
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--border2); flex-shrink: 0; margin-top: 9px;
 }
 
 /* PASOS */
 .steps-wrap { display: flex; flex-direction: column; gap: 0; }
 .step-row {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--border);
+  display: flex; gap: 20px; align-items: flex-start;
+  padding: 16px 0; border-bottom: 1px solid var(--border);
 }
 .step-row:last-child { border-bottom: none; }
 .step-n {
-  font-family: var(--mono);
-  font-size: .78rem;
-  font-weight: 700;
-  color: var(--muted);
-  width: 28px;
-  padding-top: 2px;
-  flex-shrink: 0;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--text); color: #fff;
+  font-family: var(--mono); font-size: .72rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.step-body { font-size: .95rem; line-height: 1.65; color: var(--text2); }
+.step-body { font-size: .93rem; line-height: 1.7; color: var(--text2); padding-top: 4px; }
 
 /* HIGHLIGHT CARDS */
-.hgrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-}
+.hgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
 .hcard {
-  background: var(--page);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow .2s, transform .15s;
+  background: var(--page); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 22px; display: flex; flex-direction: column; gap: 10px;
+  box-shadow: var(--shadow-sm); transition: box-shadow .2s, transform .15s;
 }
-.hcard:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-.hcard-ico { font-size: 1.4rem; }
-.hcard-t {
-  font-size: .82rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: var(--text);
-}
-.hcard-b { font-size: .9rem; line-height: 1.6; color: var(--text2); }
+.hcard:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.hcard-ico { font-size: 1.3rem; }
+.hcard-t { font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--text); }
+.hcard-b { font-size: .88rem; line-height: 1.65; color: var(--text2); }
 
 /* COMPARATIVA */
 .cmp-wrap {
@@ -666,64 +628,62 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 .vocab-table .v-note { font-size: .8rem; color: var(--muted); }
 
 /* ─── CONCEPTOS ─── */
-.concepts-section { padding-top: 40px; border-top: 1px solid var(--border); margin-bottom: 40px; }
+.concepts-section { padding-top: 44px; border-top: 1px solid var(--border); margin-bottom: 44px; }
 .concept-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  overflow: hidden;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
   margin-top: 20px;
 }
 .concept-item {
   background: var(--page);
-  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s, transform .15s;
 }
+.concept-item:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 .concept-term {
-  font-family: var(--mono);
-  font-size: .78rem;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: .04em;
+  font-size: .7rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--accent); margin-bottom: 8px;
 }
-.concept-def { font-size: .88rem; color: var(--text2); line-height: 1.55; }
+.concept-def { font-size: .88rem; color: var(--text2); line-height: 1.6; }
 
 /* ─── EJEMPLOS ─── */
-.examples-section { padding-top: 40px; border-top: 1px solid var(--border); margin-bottom: 40px; }
+.examples-section { padding-top: 44px; border-top: 1px solid var(--border); margin-bottom: 44px; }
 .example-item {
-  padding: 16px 0;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
+  display: flex; gap: 18px; align-items: flex-start;
+  padding: 18px; margin-bottom: 8px;
+  background: var(--page); border: 1px solid var(--border); border-radius: 12px;
 }
-.example-item:last-child { border-bottom: none; }
 .ex-num {
-  font-family: var(--mono);
-  font-size: .72rem;
-  color: var(--muted);
-  padding-top: 2px;
-  width: 24px;
-  flex-shrink: 0;
+  font-family: var(--mono); font-size: .72rem; font-weight: 800;
+  color: var(--accent); background: var(--accent-bg);
+  border-radius: 6px; padding: 3px 7px; flex-shrink: 0; line-height: 1.6;
 }
-.ex-text { font-size: .93rem; color: var(--text2); line-height: 1.65; }
+.ex-text { font-size: .92rem; color: var(--text2); line-height: 1.7; }
 
-/* ─── IMPORTANTE ─── */
-.important-section { padding-top: 40px; border-top: 1px solid var(--border); }
+/* ─── IMPORTANTE / PARA EL EXAMEN ─── */
+.important-section { padding-top: 44px; border-top: 1px solid var(--border); margin-bottom: 44px; }
+.important-section .sec-heading { margin-bottom: 16px; }
+.imp-grid { display: flex; flex-direction: column; gap: 8px; }
 .imp-item {
-  padding: 14px 18px;
-  background: var(--bg);
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px 20px;
+  background: var(--page);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--text);
-  margin-bottom: 8px;
-  border-radius: 0 var(--r) var(--r) 0;
-  font-size: .93rem;
-  color: var(--text2);
-  line-height: 1.65;
+  border-radius: 12px;
+  font-size: .92rem; color: var(--text2); line-height: 1.7;
+  box-shadow: var(--shadow-sm);
+}
+.imp-item::before {
+  content: '!';
+  font-family: var(--mono); font-size: .72rem; font-weight: 900;
+  background: var(--text); color: #fff;
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px;
 }
 
 /* ─── QUIZ ─── */
@@ -3255,7 +3215,8 @@ Return ONLY raw JSON (no markdown, no code blocks):
   "subtitle": "One-line content description in ${lang}",
   "subject": "${subj}",
   "level": "${level}",
-  "summary": "Complete well-written summary in ${lang}, ${isFull ? '10-12' : '5-8'} lines explaining the key points of the class",
+  "key_takeaways": ["Most important idea to remember in ${lang}", "Second key insight", "Third key point", "Fourth key point"],
+  "summary": "Complete well-written summary in ${lang}, ${isFull ? '8-10' : '4-6'} sentences explaining the key points",
   "sections": [
     {
       "type": "bullets",
@@ -3376,17 +3337,34 @@ function render(n) {
     ${n.subtitle ? `<div class="doc-subtitle">${esc(n.subtitle)}</div>` : ''}
   </div>`;
 
+  // Puntos clave (bloque oscuro prominente)
+  const takeaways = n.key_takeaways || [];
+  if (takeaways.length) {
+    h += `<div class="doc-takeaways">
+      <div class="doc-takeaways-label">Puntos clave</div>
+      <div class="doc-takeaways-list">
+        ${takeaways.map(t => `<div class="doc-takeaway">
+          <div class="doc-takeaway-dot"></div>
+          <div class="doc-takeaway-text">${esc(t)}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
   // Resumen
-  if (n.summary) h += `<div class="doc-summary">${esc(n.summary)}</div>`;
+  if (n.summary) h += `<div class="doc-summary">
+    <div class="doc-summary-label">Resumen</div>
+    ${esc(n.summary)}
+  </div>`;
 
   // Secciones — filtrar vacías
   (n.sections || []).forEach((sec, i) => {
     const content = renderSec(sec);
-    if (!content) return; // saltar secciones sin contenido
+    if (!content) return;
     h += `<div class="doc-section">
-      <div class="sec-num">${L.sec} ${String(i+1).padStart(2,'0')}</div>
       <div class="sec-heading">
-        <span class="sec-icon-wrap">${sec.icon || '—'}</span>
+        <span class="sec-num-badge">${String(i+1).padStart(2,'0')}</span>
+        ${sec.icon ? `<span class="sec-icon-wrap">${sec.icon}</span>` : ''}
         ${esc(sec.title)}
       </div>
       ${content}
@@ -3396,8 +3374,7 @@ function render(n) {
   // Conceptos
   if (n.concepts?.length) {
     h += `<div class="concepts-section">
-      <div class="sec-num">${L.concepts}</div>
-      <div class="sec-heading"><span class="sec-icon-wrap">💡</span>${esc(L.conceptsH)}</div>
+      <div class="sec-heading">${esc(L.conceptsH)}</div>
       <div class="concept-grid">
         ${n.concepts.map(c => `<div class="concept-item">
           <div class="concept-term">${esc(c.term)}</div>
@@ -3410,8 +3387,7 @@ function render(n) {
   // Vocabulario
   if (n.vocabulary?.length) {
     h += `<div class="vocab-section">
-      <div class="sec-num">${L.vocab}</div>
-      <div class="sec-heading"><span class="sec-icon-wrap">📖</span>${esc(L.vocabH)}</div>
+      <div class="sec-heading">${esc(L.vocabH)}</div>
       <table class="vocab-table">
         <thead><tr><th>${esc(L.wordCol)}</th><th>${esc(L.transCol)}</th><th>${esc(L.noteCol)}</th></tr></thead>
         <tbody>${n.vocabulary.map(v => {
@@ -3429,8 +3405,7 @@ function render(n) {
   // Ejemplos
   if (n.examples?.length) {
     h += `<div class="examples-section">
-      <div class="sec-num">${L.examples}</div>
-      <div class="sec-heading"><span class="sec-icon-wrap">✏️</span>${esc(L.examplesH)}</div>
+      <div class="sec-heading">${esc(L.examplesH)}</div>
       ${n.examples.map((e, i) => `<div class="example-item">
         <div class="ex-num">${String(i+1).padStart(2,'0')}</div>
         <div class="ex-text">${esc(typeof e === 'string' ? e : (e?.text || e?.body || e?.title || Object.values(e).filter(v => typeof v === 'string').join(' — ') || ''))}</div>
@@ -3441,9 +3416,10 @@ function render(n) {
   // Importante
   if (n.important?.length) {
     h += `<div class="important-section">
-      <div class="sec-num">${L.important}</div>
-      <div class="sec-heading"><span class="sec-icon-wrap">⚠️</span>${esc(L.importantH)}</div>
-      ${n.important.map(it => `<div class="imp-item">${esc(typeof it === 'string' ? it : (it?.text || it?.body || it?.title || Object.values(it).filter(v => typeof v === 'string').join(' — ') || ''))}</div>`).join('')}
+      <div class="sec-heading">${esc(L.importantH)}</div>
+      <div class="imp-grid">
+        ${n.important.map(it => `<div class="imp-item">${esc(typeof it === 'string' ? it : (it?.text || it?.body || it?.title || Object.values(it).filter(v => typeof v === 'string').join(' — ') || ''))}</div>`).join('')}
+      </div>
     </div>`;
   }
 
