@@ -871,6 +871,15 @@ textarea { min-height: 200px; resize: none; line-height: 1.6; }
 }
 .fc-restart:hover { opacity:.9; }
 
+/* Spaced repetition buttons */
+.fc-sr-controls { display:flex; gap:10px; align-items:center; width:100%; max-width:320px; }
+.fc-sr-yes, .fc-sr-no { flex:1; border:none; border-radius:10px; cursor:pointer; font-family:var(--sans);
+  font-size:.93rem; font-weight:700; padding:13px 20px; transition:opacity .15s,transform .1s; }
+.fc-sr-yes { background:#2563eb; color:#fff; box-shadow:0 4px 14px rgba(37,99,235,.28); }
+.fc-sr-no { background:#f1f5f9; color:#1e293b; border:1px solid var(--border2); }
+.fc-sr-yes:hover,.fc-sr-no:hover { opacity:.88; }
+.fc-sr-yes:active,.fc-sr-no:active { transform:scale(.96); }
+
 /* Dots de progreso */
 .fc-dots { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; max-width:400px; }
 .fc-dot { width:8px; height:8px; border-radius:50%; background:var(--border2); transition:background .3s; }
@@ -2361,10 +2370,12 @@ function renderEsquema(data, tipo) {
             <div style="width:18px;height:2px;background:#d1d5db;flex-shrink:0;margin-top:19px;"></div>
             <div style="flex:1;min-width:0;">
               <!-- nodo rama -->
-              <div style="background:${p.bg};border:2px solid ${p.border};color:${p.text};
+              <div onclick="explainEsquemaNode('${branch.label.replace(/'/g,"\\'")}','${(rootLabel||'').replace(/'/g,"\\'")}');event.stopPropagation()"
+                style="background:${p.bg};border:2px solid ${p.border};color:${p.text};
                 font-weight:700;font-size:.9rem;padding:10px 15px;border-radius:13px;
-                word-break:break-word;line-height:1.4;
-                box-shadow:0 2px 12px ${p.glow};margin-bottom:${branch.children.length?'0':'0'};">${esc(branch.label)}</div>
+                word-break:break-word;line-height:1.4;cursor:pointer;transition:opacity .15s;
+                box-shadow:0 2px 12px ${p.glow};margin-bottom:${branch.children.length?'0':'0'};"
+                onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">${esc(branch.label)}</div>
               <!-- hojas -->
               ${branch.children.map((child, ci) => {
                 const isLastLeaf = ci === branch.children.length - 1;
@@ -2376,10 +2387,13 @@ function renderEsquema(data, tipo) {
                   <div style="flex:1;min-width:0;padding-bottom:${isLastLeaf?'0':'5px'};">
                     <div style="display:flex;align-items:flex-start;gap:0;">
                       <div style="width:14px;height:2px;background:${p.border};opacity:.35;flex-shrink:0;margin-top:16px;"></div>
-                      <div style="flex:1;min-width:0;background:#fff;border:1.5px solid #e8eaed;color:#374151;
+                      <div onclick="explainEsquemaNode('${child.replace(/'/g,"\\'")}','${(rootLabel||'').replace(/'/g,"\\'")}');event.stopPropagation()"
+                        style="flex:1;min-width:0;background:#fff;border:1.5px solid #e8eaed;color:#374151;
                         font-size:.83rem;font-weight:500;padding:8px 12px;border-radius:10px;
-                        word-break:break-word;line-height:1.45;
-                        box-shadow:0 1px 6px rgba(0,0,0,.07);">${esc(child)}</div>
+                        word-break:break-word;line-height:1.45;cursor:pointer;transition:border-color .15s,box-shadow .15s;
+                        box-shadow:0 1px 6px rgba(0,0,0,.07);"
+                        onmouseover="this.style.borderColor='#93c5fd';this.style.boxShadow='0 2px 10px rgba(37,99,235,.15)'"
+                        onmouseout="this.style.borderColor='#e8eaed';this.style.boxShadow='0 1px 6px rgba(0,0,0,.07)'">${esc(child)}</div>
                     </div>
                   </div>
                 </div>`;
@@ -2428,7 +2442,50 @@ function renderEsquema(data, tipo) {
     html = buildSVGTree(subject, data.map(c=>({ label:c.concepto, children:[...(c.descripcion?[c.descripcion]:[]),...(c.relacionado||[])]})));
   }
 
-  document.getElementById('esquema-body').innerHTML = html;
+  document.getElementById('esquema-body').innerHTML = html + `
+    <div id="esquema-explain-panel" style="display:none;margin-top:28px;background:var(--page);
+      border:1px solid var(--border);border-radius:16px;padding:24px 22px;
+      box-shadow:var(--shadow-md);position:relative;">
+      <button onclick="document.getElementById('esquema-explain-panel').style.display='none'"
+        style="position:absolute;top:12px;right:14px;background:none;border:none;cursor:pointer;
+          font-size:1.1rem;color:var(--muted);padding:4px 8px;">✕</button>
+      <div id="esquema-explain-content" style="font-size:.9rem;line-height:1.7;color:var(--text)"></div>
+    </div>`;
+}
+
+let _esquemaExplainActive = false;
+async function explainEsquemaNode(label, contextSubject) {
+  if (_esquemaExplainActive) return;
+  _esquemaExplainActive = true;
+  const panel = document.getElementById('esquema-explain-panel');
+  const content = document.getElementById('esquema-explain-content');
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  content.innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:var(--muted)">
+    <div class="spin-sm"></div> Explicando <strong>${esc(label)}</strong>...
+  </div>`;
+
+  try {
+    const apikey = localStorage.getItem('gk') || '';
+    if (!apikey) { content.innerHTML = 'Necesitas la clave API guardada.'; _esquemaExplainActive = false; return; }
+    const lang = outputLang(contextSubject || '');
+    const data = await groqCall(apikey, {
+      model: 'llama-3.1-8b-instant',
+      temperature: 0.3,
+      max_tokens: 300,
+      messages: [{ role: 'user', content:
+        `Explain the concept "${label}" (subject: "${contextSubject || 'general'}") in 3-4 sentences in ${lang}. Be concrete, clear and useful for studying. Include an example if helpful. No headings, no bullets — just plain prose.`
+      }]
+    });
+    const explanation = data.choices[0].message.content.trim();
+    content.innerHTML = `
+      <div style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
+        color:var(--accent);margin-bottom:8px;">${esc(label)}</div>
+      <div>${esc(explanation)}</div>`;
+  } catch(e) {
+    content.innerHTML = `<span style="color:#c00">Error: ${esc(e.message)}</span>`;
+  }
+  _esquemaExplainActive = false;
 }
 
 // ── Quiz ─────────────────────────────────────────────────────
@@ -2551,14 +2608,28 @@ Rules: "correct" = index of correct option. Mix types. Plausible wrong options. 
 NOTES:\n${context}`;
   }
 
+  // Añadir semilla aleatoria para forzar variedad cada vez
+  const seed = Math.random().toString(36).slice(2, 8);
   const data = await groqCall(apikey, {
     model: 'llama-3.1-8b-instant',
-    temperature: 0.4,
-    max_tokens: 700,
-    messages: [{ role: 'user', content: prompt }]
+    temperature: 0.7,
+    max_tokens: 900,
+    messages: [{ role: 'user', content: prompt + `\n\n[session:${seed}] Generate DIFFERENT questions each time.` }]
   });
   const raw = data.choices[0].message.content.trim();
-  return repairJSON(raw, 'array');
+  const parsed = repairJSON(raw, 'array');
+  if (!Array.isArray(parsed) || !parsed.length) throw new Error('El modelo no devolvió preguntas válidas. Prueba de nuevo.');
+
+  // Validar y filtrar preguntas según tipo
+  const validated = parsed.filter(q => {
+    if (!q || !q.q) return false;
+    if (tipo === 'test') return Array.isArray(q.opts) && q.opts.length >= 2 && typeof q.correct === 'number';
+    if (tipo === 'vf') return typeof q.correct === 'boolean';
+    if (tipo === 'corta') return !!q.answer;
+    return true;
+  });
+  if (!validated.length) throw new Error('Preguntas en formato incorrecto. Prueba de nuevo.');
+  return validated;
 }
 
 function startQuizTimer(seconds) {
@@ -2603,6 +2674,7 @@ function renderQuizQuestion() {
   if (quizIndex >= quizQuestions.length) { renderQuizResults(); return; }
   if (quizTipo === 'vf') { renderQuizVF(); return; }
   const q = quizQuestions[quizIndex];
+  if (!q || !Array.isArray(q.opts) || !q.opts.length) { quizIndex++; renderQuizQuestion(); return; }
   const total = quizQuestions.length;
   const pct = (quizIndex / total * 100).toFixed(0);
   const letters = ['A','B','C','D'];
@@ -2736,6 +2808,7 @@ function renderQuizResultsCorta() {
       </div>
     </div>`).join('');
 
+  saveQuizScore(quizScore, total, currentNotes && currentNotes.subject);
   document.getElementById('quiz-body').innerHTML = `
     <div class="quiz-results">
       <div class="quiz-score-circle">
@@ -2801,6 +2874,7 @@ function renderQuizResults() {
     </div>`;
   }).join('');
 
+  saveQuizScore(quizScore, total, currentNotes && currentNotes.subject);
   document.getElementById('quiz-body').innerHTML = `
     <div class="quiz-results">
       <div class="quiz-score-circle">
@@ -2818,8 +2892,22 @@ function renderQuizResults() {
     </div>`;
 }
 
+// ── Guardar resultado de quiz en localStorage ─────────────────
+function saveQuizScore(score, total, subject) {
+  try {
+    const hist = JSON.parse(localStorage.getItem('quiz_history') || '[]');
+    hist.unshift({
+      date: new Date().toISOString(),
+      subject: subject || 'Quiz',
+      score, total,
+      pct: Math.round(score / total * 100)
+    });
+    localStorage.setItem('quiz_history', JSON.stringify(hist.slice(0, 50)));
+  } catch(_) {}
+}
+
 // ── Flashcards ────────────────────────────────────────────────
-let fcCards = [], fcIndex = 0, fcFlipped = false, fcFrom = 'res';
+let fcCards = [], fcIndex = 0, fcFlipped = false, fcFrom = 'res', fcWrong = [];
 
 function buildCards(notes) {
   const cards = [];
@@ -2854,7 +2942,7 @@ function startFlash() {
   if (!currentNotes) return;
   fcCards = buildCards(currentNotes);
   if (!fcCards.length) { alert('No hay vocabulario ni conceptos para practicar.'); return; }
-  fcIndex = 0; fcFlipped = false; fcFrom = 'res';
+  fcIndex = 0; fcFlipped = false; fcFrom = 'res'; fcWrong = [];
   renderFlashCard();
   show('flash');
 }
@@ -2863,7 +2951,7 @@ function startFlashFromLib(notes) {
   currentNotes = notes;
   fcCards = buildCards(notes);
   if (!fcCards.length) { alert('No hay vocabulario ni conceptos para practicar.'); return; }
-  fcIndex = 0; fcFlipped = false; fcFrom = 'lib';
+  fcIndex = 0; fcFlipped = false; fcFrom = 'lib'; fcWrong = [];
   renderFlashCard();
   show('flash');
 }
@@ -2880,11 +2968,13 @@ function renderFlashCard() {
   if (fcIndex >= total) {
     // Pantalla final
     document.getElementById('fc-prog').textContent = '';
+    const wrongCount = fcWrong.length;
     body.innerHTML = `<div class="fc-result">
-      <div class="fc-result-emoji">🎉</div>
-      <div class="fc-result-title">¡Has repasado todas las tarjetas!</div>
-      <div class="fc-result-sub">${total} tarjetas completadas</div>
-      <button class="fc-restart" onclick="fcIndex=0;fcFlipped=false;fcCards.sort(()=>Math.random()-.5);renderFlashCard()">Repetir en orden aleatorio</button>
+      <div class="fc-result-emoji">${wrongCount === 0 ? '🎉' : '💪'}</div>
+      <div class="fc-result-title">${wrongCount === 0 ? '¡Perfecto! Todo dominado' : `${total - wrongCount}/${total} dominadas`}</div>
+      <div class="fc-result-sub">${wrongCount === 0 ? `${total} tarjetas sin errores` : `${wrongCount} tarjeta${wrongCount>1?'s':''} para repasar`}</div>
+      ${wrongCount > 0 ? `<button class="fc-restart" style="background:#c00;" onclick="fcCards=[...fcWrong];fcWrong=[];fcIndex=0;fcFlipped=false;renderFlashCard()">Repasar las ${wrongCount} incorrectas</button>` : ''}
+      <button class="fc-restart" onclick="fcCards=buildCards(currentNotes);fcWrong=[];fcIndex=0;fcFlipped=false;fcCards.sort(()=>Math.random()-.5);renderFlashCard()">Repetir todas</button>
     </div>`;
     return;
   }
@@ -2906,7 +2996,7 @@ function renderFlashCard() {
         <div class="fc-front">
           <div class="fc-tag">${esc(c.tag)}</div>
           <div class="fc-word">${esc(c.front)}</div>
-          <div class="fc-hint">Toca para ver la respuesta</div>
+          <div class="fc-hint">Pulsa "Ver respuesta" cuando estés listo</div>
         </div>
         <div class="fc-back">
           <div class="fc-tag">Respuesta</div>
@@ -2916,10 +3006,12 @@ function renderFlashCard() {
       </div>
     </div>
 
-    <div class="fc-controls">
-      <button class="fc-btn" onclick="fcPrev()" ${fcIndex===0?'disabled':''}>← Anterior</button>
-      <button class="fc-flip-btn" onclick="flipCard()">Girar</button>
-      <button class="fc-btn" onclick="fcNext()">Siguiente →</button>
+    <div class="fc-controls" id="fc-controls-main">
+      <button class="fc-flip-btn" onclick="flipCard()">Ver respuesta</button>
+    </div>
+    <div class="fc-sr-controls" id="fc-sr-controls" style="display:none">
+      <button class="fc-sr-no" onclick="fcMarkWrong()">No lo sé</button>
+      <button class="fc-sr-yes" onclick="fcMarkRight()">Lo sé</button>
     </div>`;
 
   fcFlipped = false;
@@ -2930,7 +3022,13 @@ function flipCard() {
   if (!card) return;
   fcFlipped = !fcFlipped;
   card.classList.toggle('flipped', fcFlipped);
+  const main = document.getElementById('fc-controls-main');
+  const sr = document.getElementById('fc-sr-controls');
+  if (main) main.style.display = fcFlipped ? 'none' : 'flex';
+  if (sr) sr.style.display = fcFlipped ? 'flex' : 'none';
 }
+function fcMarkRight() { fcIndex++; fcFlipped = false; renderFlashCard(); }
+function fcMarkWrong() { fcWrong.push(fcCards[fcIndex]); fcIndex++; fcFlipped = false; renderFlashCard(); }
 function fcNext() { fcIndex++; fcFlipped = false; renderFlashCard(); }
 function fcPrev() { if (fcIndex > 0) { fcIndex--; fcFlipped = false; renderFlashCard(); } }
 
@@ -3280,7 +3378,7 @@ async function run() {
 
     // Primera pasada
     const data = await groqCall(apikey, {
-      model: 'llama-3.1-8b-instant',
+      model: 'llama-3.3-70b-versatile',
       temperature: 0.2,
       max_tokens: cfg.tokens,
       messages: [
@@ -3299,7 +3397,7 @@ async function run() {
 
       const text2 = trimText(text, 3000).slice(1500); // segunda mitad del texto
       const data2 = await groqCall(apikey, {
-        model: 'llama-3.1-8b-instant',
+        model: 'llama-3.3-70b-versatile',
         temperature: 0.2,
         max_tokens: 2000,
         messages: [
