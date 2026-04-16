@@ -1261,8 +1261,27 @@ button:active:not(:disabled) { transform: scale(.96) !important; transition: tra
   </div>
   <div class="deb-body">
     <div class="deb-card">
+      <!-- Selector de apuntes guardados -->
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Usar apuntes guardados</label>
+          <button id="deb-context-clear" onclick="clearDebContext()" style="display:none;background:none;border:none;cursor:pointer;font-size:.75rem;color:var(--muted);padding:2px 6px;border-radius:4px;text-decoration:underline;">Quitar</button>
+        </div>
+        <div id="deb-context-selected" style="display:none;background:var(--accent-bg);border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:.88rem;color:var(--accent);font-weight:600;">
+          <!-- se rellena cuando hay apuntes seleccionados -->
+        </div>
+        <div id="deb-notes-list" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;"></div>
+        <button onclick="toggleDebNotesList()" id="deb-notes-toggle"
+          style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;
+            border:1px dashed var(--border2);background:var(--bg);cursor:pointer;
+            font-family:var(--sans);font-size:.88rem;color:var(--text2);transition:border-color .15s;text-align:left;"
+          onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'">
+          <span style="font-size:1rem;">📚</span>
+          <span id="deb-notes-toggle-label">Elegir materia guardada (opcional)</span>
+        </button>
+      </div>
       <div style="display:flex;flex-direction:column;gap:6px;">
-        <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Asignatura (opcional)</label>
+        <label style="font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Asignatura</label>
         <input id="deb-subj" type="text" placeholder="ej: Matemáticas, Historia, Inglés..."
           style="padding:10px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:var(--sans);font-size:.93rem;outline:none;transition:border-color .15s;"
           onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
@@ -4084,6 +4103,88 @@ async function debPhotoChange(input) {
   input.value = '';
 }
 
+// ── Deberes: selector de apuntes ─────────────────────────────
+let debContextNotes = null;
+let debNotesListOpen = false;
+
+function toggleDebNotesList() {
+  const list = document.getElementById('deb-notes-list');
+  const label = document.getElementById('deb-notes-toggle-label');
+  debNotesListOpen = !debNotesListOpen;
+  if (debNotesListOpen) {
+    renderDebNotesList();
+    label.textContent = 'Ocultar materias';
+  } else {
+    list.innerHTML = '';
+    label.textContent = 'Elegir materia guardada (opcional)';
+  }
+}
+
+function renderDebNotesList() {
+  const list = document.getElementById('deb-notes-list');
+  const saved = loadNotes();
+  if (!saved.length) {
+    list.innerHTML = `<div style="font-size:.85rem;color:var(--muted);padding:10px;text-align:center;">No tienes apuntes guardados aún.</div>`;
+    return;
+  }
+  list.innerHTML = saved.map((n, i) => `
+    <button onclick="selectDebContext(${i})"
+      style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;
+        border:1px solid var(--border);background:var(--page);cursor:pointer;
+        font-family:var(--sans);font-size:.88rem;text-align:left;transition:border-color .15s,background .15s;"
+      onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--accent-bg)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--page)'">
+      <span style="font-size:1rem;flex-shrink:0;">📖</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(n.subject || n.title || 'Sin título')}</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(n.title || '')}</div>
+      </div>
+    </button>`).join('');
+}
+
+function selectDebContext(idx) {
+  const saved = loadNotes();
+  debContextNotes = saved[idx];
+  // Autocompletar asignatura
+  const subjEl = document.getElementById('deb-subj');
+  if (debContextNotes.subject) subjEl.value = debContextNotes.subject;
+  // Mostrar la selección
+  const selDiv = document.getElementById('deb-context-selected');
+  const clearBtn = document.getElementById('deb-context-clear');
+  selDiv.style.display = 'block';
+  selDiv.innerHTML = `📖 <strong>${esc(debContextNotes.subject || debContextNotes.title || 'Apuntes')}</strong> — ${esc(debContextNotes.title || '')}`;
+  clearBtn.style.display = 'inline';
+  // Cerrar lista
+  document.getElementById('deb-notes-list').innerHTML = '';
+  document.getElementById('deb-notes-toggle-label').textContent = 'Cambiar materia';
+  debNotesListOpen = false;
+}
+
+function clearDebContext() {
+  debContextNotes = null;
+  document.getElementById('deb-context-selected').style.display = 'none';
+  document.getElementById('deb-context-clear').style.display = 'none';
+  document.getElementById('deb-notes-toggle-label').textContent = 'Elegir materia guardada (opcional)';
+  document.getElementById('deb-notes-list').innerHTML = '';
+  debNotesListOpen = false;
+}
+
+function buildDebContext(notes) {
+  if (!notes) return '';
+  const parts = [];
+  if (notes.key_takeaways && notes.key_takeaways.length)
+    parts.push('Ideas clave:\n' + notes.key_takeaways.map(t => `- ${t}`).join('\n'));
+  if (notes.concepts && notes.concepts.length)
+    parts.push('Conceptos:\n' + notes.concepts.slice(0, 12).map(c => `- ${c.term}: ${c.definition}`).join('\n'));
+  if (notes.sections && notes.sections.length)
+    parts.push('Contenido:\n' + notes.sections.slice(0, 4).flatMap(s =>
+      (s.items || []).slice(0, 3).map(it => `- ${typeof it === 'string' ? it : it.title || it.body || ''}`)
+    ).join('\n'));
+  if (notes.exam_tips && notes.exam_tips.length)
+    parts.push('Puntos importantes:\n' + notes.exam_tips.map(t => `- ${t}`).join('\n'));
+  return parts.join('\n\n');
+}
+
 async function resolverDeberes() {
   const problema = document.getElementById('deb-txt').value.trim();
   const asig     = document.getElementById('deb-subj').value.trim();
@@ -4099,7 +4200,8 @@ async function resolverDeberes() {
   btn.textContent = 'Resolviendo...';
   resEl.innerHTML = `<div class="deb-loading"><div class="deb-spinner"></div><div style="font-size:.9rem;color:var(--muted);">La IA está resolviendo tu ejercicio...</div></div>`;
 
-  const prompt = `Eres un profesor experto que ayuda a estudiantes a entender y resolver ejercicios.${asig ? `\nAsignatura: ${asig}` : ''}
+  const notesCtx = buildDebContext(debContextNotes);
+  const prompt = `Eres un profesor experto que ayuda a estudiantes a entender y resolver ejercicios.${asig ? `\nAsignatura: ${asig}` : ''}${notesCtx ? `\n\nAPUNTES DE LA MATERIA (úsalos como referencia para dar una respuesta coherente con lo estudiado):\n${notesCtx}` : ''}
 
 EJERCICIO:
 ${problema}
